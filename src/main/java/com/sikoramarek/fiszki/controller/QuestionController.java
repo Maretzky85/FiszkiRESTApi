@@ -15,11 +15,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.EntityNotFoundException;
 import javax.validation.ConstraintViolationException;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -61,23 +59,18 @@ public class QuestionController extends ReturnController {
 		}
 	}
 
-	@PatchMapping("questions/{question_id}")
-	public ResponseEntity<Question> editQuestion(@RequestBody Question question, @PathVariable("question_id") Long question_id){
-		Optional<Question> optionalQuestion = questionsDAO.findById(question_id);
-		if (optionalQuestion.isPresent()){
+	@PutMapping("questions/{question_id}")
+	public ResponseEntity<Question> editQuestion(@RequestBody Question question,
+	                                             @PathVariable("question_id") Long question_id){
+		if (questionsDAO.existsById(question.getId())){
 			for (Tag tag : question.getTags()
 			) {
-				Optional<Tag> tagCheck = tagDAO.findById(tag.getId());
-				if (!tagCheck.isPresent()){
+				if (!tagDAO.existsById(tag.getId())){
 					return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 				}
 			}
-			Question questionToEdit = optionalQuestion.get();
-			questionToEdit.setTitle(question.getTitle());
-			questionToEdit.setQuestion(question.getQuestion());
-			questionToEdit.setTags(question.getTags());
-			questionsDAO.save(questionToEdit);
-			return new ResponseEntity<>(questionToEdit, HttpStatus.OK);
+			questionsDAO.save(question);
+			return new ResponseEntity<>(question, HttpStatus.OK);
 		}else {
 			return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
 		}

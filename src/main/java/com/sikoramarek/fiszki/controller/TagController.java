@@ -62,7 +62,7 @@ public class TagController extends ReturnController{
 		}
 	}
 
-	@PatchMapping("tags/{tag_id}")
+	@PutMapping("tags/{tag_id}")
 	public ResponseEntity<Tag> editTag(@PathVariable("tag_id") Long tagId, @RequestBody Tag newTag){
 		Optional<Tag> tag = tagDAO.findById(tagId);
 		if (tag.isPresent()){
