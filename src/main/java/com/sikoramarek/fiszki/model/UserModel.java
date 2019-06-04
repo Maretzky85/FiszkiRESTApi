@@ -1,7 +1,7 @@
 package com.sikoramarek.fiszki.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Data;
-import org.springframework.stereotype.Component;
 
 import javax.persistence.*;
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.List;
 @Entity
 @Data
 @Table(name = "users")
-public class User {
+public class UserModel {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,6 +22,7 @@ public class User {
 	String password;
 
 	@OneToMany(mappedBy = "user")
+	@JsonBackReference
 	List<Question> questionList;
 
 }

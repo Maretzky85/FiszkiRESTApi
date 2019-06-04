@@ -1,7 +1,6 @@
 package com.sikoramarek.fiszki.model;
 
 import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -37,7 +36,7 @@ public class Question {
 	@JsonIgnore
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "user_id", nullable = false)
-	private User user;
+	private UserModel user;
 
 	@ToString.Exclude
 	@ManyToMany(fetch = FetchType.EAGER)
