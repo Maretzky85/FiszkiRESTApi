@@ -46,14 +46,15 @@ public class TagController extends ReturnController{
 	public ResponseEntity<List<Question>> getQuestionsByTagId(@PathVariable("tagId") Long tagId) {
 		Optional<Tag> tag = tagDAO.findById(tagId);
 		if (tag.isPresent()){
-			return returnCollectionIfNotEmpty(questionsDAO.findQuestionsByTagsContaining(tag.get()));
+			List<Question> questionList = questionsDAO.findQuestionsByTagsContaining(tag.get());
+			return new ResponseEntity<>(questionList, HttpStatus.OK);
 		}else {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
 
-	@PostMapping("tags/")
-	public ResponseEntity<Tag> newAnswer(@RequestBody Tag tag){
+	@PostMapping("tags")
+	public ResponseEntity<Tag> newTag(@RequestBody Tag tag){
 		try {
 			tagDAO.save(tag);
 			return new ResponseEntity<>(tag, HttpStatus.OK);
