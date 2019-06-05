@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin(origins = "*")
+@CrossOrigin
 public class QuestionController extends ReturnController {
 	private QuestionsDAO questionsDAO;
 	private AnswersDAO answersDAO;

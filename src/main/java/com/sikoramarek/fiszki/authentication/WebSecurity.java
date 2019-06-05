@@ -12,6 +12,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
+
 import static com.sikoramarek.fiszki.authentication.SecurityConstants.SIGN_UP_URL;
 
 @EnableWebSecurity
@@ -27,6 +29,8 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.cors().and().csrf().disable().authorizeRequests()
+				.antMatchers(HttpMethod.GET, "/**").permitAll()
+				.antMatchers(HttpMethod.DELETE, "/**").authenticated()
 				.antMatchers(HttpMethod.POST, SIGN_UP_URL).permitAll()
 				.anyRequest().authenticated()
 				.and()
@@ -43,8 +47,17 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 
 	@Bean
 	CorsConfigurationSource corsConfigurationSource() {
+		final CorsConfiguration configuration = new CorsConfiguration();
+		configuration.applyPermitDefaultValues();
+//		configuration.setAllowedOrigins(Arrays.asList("*"));
+		configuration.setAllowedOrigins(Arrays.asList("https://fiszki.sikoramarek.com/**"));
+		configuration.setAllowedMethods(Arrays.asList("GET", "PUT", "DELETE", "POST"));
+
 		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
+		source.registerCorsConfiguration("/**", configuration);
+
 		return source;
+
 	}
+
 }
