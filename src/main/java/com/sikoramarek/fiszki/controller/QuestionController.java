@@ -35,8 +35,7 @@ public class QuestionController extends ReturnController {
 	}
 
 	@GetMapping("questions")
-	public ResponseEntity getAllQuestions(@RequestHeader(value = "referer", required = false) final String referer) {
-		System.out.println(referer);
+	public ResponseEntity getAllQuestions() {
 		return returnCollectionIfNotEmpty(questionsDAO.findAll());
 	}
 
