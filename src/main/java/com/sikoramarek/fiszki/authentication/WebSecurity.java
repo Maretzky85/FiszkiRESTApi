@@ -30,8 +30,8 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		http.cors().and().csrf().disable().authorizeRequests()
 				.antMatchers(HttpMethod.GET, "/**").permitAll()
-				.antMatchers(HttpMethod.DELETE, "/**").authenticated()
 				.antMatchers(HttpMethod.POST, SIGN_UP_URL).permitAll()
+				.antMatchers(HttpMethod.GET, "/users**").authenticated()
 				.anyRequest().authenticated()
 				.and()
 				.addFilter(new JWTAuthenticationFilter(authenticationManager()))
@@ -49,9 +49,12 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 	CorsConfigurationSource corsConfigurationSource() {
 		final CorsConfiguration configuration = new CorsConfiguration();
 		configuration.applyPermitDefaultValues();
-//		configuration.setAllowedOrigins(Arrays.asList("*"));
-		configuration.setAllowedOrigins(Arrays.asList("https://fiszki.sikoramarek.com/**"));
+		configuration.setAllowedOrigins(Arrays.asList("*"));
+//		configuration.setAllowedOrigins(Arrays.asList("http://fiszki.sikoramarek.com/**", "http://www.fiszki.sikoramarek.com/**"));
 		configuration.setAllowedMethods(Arrays.asList("GET", "PUT", "DELETE", "POST"));
+//		configuration.setAllowCredentials(true);
+		configuration.setExposedHeaders(Arrays.asList("Authorization"));
+		configuration.addAllowedHeader("Authorization");
 
 		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);

@@ -30,6 +30,10 @@ public class UsersController extends ReturnController {
 	public ResponseEntity<List<UserModel>> getAllUsers(){
 		List<UserModel> allUsers = usersDAO.findAll();
 		if (!allUsers.isEmpty()){
+			for (UserModel user : allUsers
+					) {
+				user.setPassword(null);
+			}
 			return new ResponseEntity<>(allUsers, HttpStatus.OK);
 		}else{
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -40,7 +44,9 @@ public class UsersController extends ReturnController {
 	public ResponseEntity<UserModel> getUser(@PathVariable("user_id") long userId){
 		Optional<UserModel> user = usersDAO.findById(userId);
 		if (user.isPresent()){
-			return new ResponseEntity<>(user.get(), HttpStatus.OK);
+			UserModel userToReturn = user.get();
+			userToReturn.setPassword(null);
+			return new ResponseEntity<>(userToReturn, HttpStatus.OK);
 		}else {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
