@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin
+@CrossOrigin(origins = "*")
 public class QuestionController extends ReturnController {
 	private QuestionsDAO questionsDAO;
 	private AnswersDAO answersDAO;
@@ -35,7 +35,8 @@ public class QuestionController extends ReturnController {
 	}
 
 	@GetMapping("questions")
-	public ResponseEntity getAllQuestions() {
+	public ResponseEntity getAllQuestions(@RequestHeader(value = "referer", required = false) final String referer) {
+		System.out.println(referer);
 		return returnCollectionIfNotEmpty(questionsDAO.findAll());
 	}
 
