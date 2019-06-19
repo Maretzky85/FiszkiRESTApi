@@ -10,11 +10,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin(origins = "*")
 public class AnswerController extends ReturnController {
 
 	private AnswersDAO answersDAO;
@@ -34,7 +34,7 @@ public class AnswerController extends ReturnController {
 	}
 
 	@GetMapping("answers/{answer_id}")
-	public ResponseEntity<Answer> getAnswerById(@PathVariable("answer_id") Long answer_id){
+	public ResponseEntity<ArrayList<Answer>> getAnswerById(@PathVariable("answer_id") Long answer_id){
 		return returnIfNotEmpty(answersDAO.findById(answer_id));
 	}
 

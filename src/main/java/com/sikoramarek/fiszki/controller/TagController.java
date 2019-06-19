@@ -8,15 +8,18 @@ import com.sikoramarek.fiszki.model.Tag;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin(origins = "*")
 public class TagController extends ReturnController{
 
 	private TagDAO tagDAO;
@@ -37,7 +40,7 @@ public class TagController extends ReturnController{
 
 
 	@GetMapping("tags/{tagId}")
-	public ResponseEntity<Tag> getTagById(@PathVariable("tagId") Long tagId){
+	public ResponseEntity<ArrayList<Tag>> getTagById(@PathVariable("tagId") Long tagId){
 		return returnIfNotEmpty(tagDAO.findById(tagId));
 	}
 
@@ -77,12 +80,31 @@ public class TagController extends ReturnController{
 	}
 
 	@DeleteMapping("tags/{tag_id}")
-	public ResponseEntity<Answer> deleteAnswer(@PathVariable("tag_id") Long answer_id){
+	public ResponseEntity<Answer> deleteAnswer(@PathVariable("tag_id") Long tag_id){
 		try {
-			tagDAO.deleteById(answer_id);
+			tagDAO.deleteById(tag_id);
 			return new ResponseEntity<>(HttpStatus.OK);
 		}catch (Exception e){
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
+	}
+
+	@GetMapping("tags/{tag_id}/questions/random")
+	public ResponseEntity<ArrayList<Question>> getRandom(@PathVariable("tag_id") Long tag_id){
+		Tag tag;
+		Optional<Tag> optionalTag = tagDAO.findById(tag_id);
+		if (optionalTag.isPresent()){
+			tag = optionalTag.get();
+		}else {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+		Long quantity = questionsDAO.countQuestionByTagsContaining(tag);
+		int index = (int)(Math.random() * quantity);
+		Page<Question> questionPage = questionsDAO
+				.findAllByTagsContaining(tag, PageRequest.of(index, 1, Sort.unsorted()));
+		if (questionPage.hasContent()) {
+			return new ResponseEntity<>(packToArray(questionPage.getContent().get(0)), HttpStatus.OK);
+		}
+		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 	}
 }

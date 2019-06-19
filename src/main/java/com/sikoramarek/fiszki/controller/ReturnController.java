@@ -3,6 +3,7 @@ package com.sikoramarek.fiszki.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -24,9 +25,18 @@ abstract class ReturnController {
 		}
 	}
 
-	<T> ResponseEntity<T> returnIfNotEmpty(Optional<T> objectToCheck){
-		return objectToCheck.map(t -> new ResponseEntity<>(t, HttpStatus.OK))
-				.orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+	<T> ResponseEntity<ArrayList<T>> returnIfNotEmpty(Optional<T> objectToCheck) {
+		if (objectToCheck.isPresent()){
+			return new ResponseEntity<>(packToArray(objectToCheck.get()), HttpStatus.OK);
+		}else {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+	}
+
+	<T> ArrayList<T> packToArray(T objectToPack){
+		ArrayList<T> returnArray = new ArrayList<>(1);
+		returnArray.add(objectToPack);
+		return returnArray;
 	}
 
 }

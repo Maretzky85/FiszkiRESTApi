@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin(origins = "*")
 public class UsersController extends ReturnController {
 
 	private UsersDAO usersDAO;

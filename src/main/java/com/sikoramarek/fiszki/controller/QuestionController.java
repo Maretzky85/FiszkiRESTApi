@@ -16,11 +16,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.ConstraintViolationException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin(origins = "*")
 public class QuestionController extends ReturnController {
 	private QuestionsDAO questionsDAO;
 	private AnswersDAO answersDAO;
@@ -40,7 +40,7 @@ public class QuestionController extends ReturnController {
 	}
 
 	@GetMapping("questions/{question_id}")
-	public ResponseEntity<Question> getQuestionById(@PathVariable("question_id") Long question_id){
+	public ResponseEntity<ArrayList<Question>> getQuestionById(@PathVariable("question_id") Long question_id){
 		return returnIfNotEmpty(questionsDAO.findById(question_id));
 	}
 
@@ -88,14 +88,14 @@ public class QuestionController extends ReturnController {
 		}
 	}
 
-	private Question getRandom(){
-		Long qty = questionsDAO.count();
-		int idx = (int)(Math.random() * qty);
-		Page<Question> questionPage = questionsDAO.findAll(PageRequest.of(idx, 1, Sort.unsorted()));
-		Question q = null;
+	@GetMapping("questions/random")
+	public ResponseEntity<ArrayList<Question>> getRandom(){
+		Long quantity = questionsDAO.count();
+		int index = (int)(Math.random() * quantity);
+		Page<Question> questionPage = questionsDAO.findAll(PageRequest.of(index, 1, Sort.unsorted()));
 		if (questionPage.hasContent()) {
-			q = questionPage.getContent().get(0);
+			return new ResponseEntity<>(packToArray(questionPage.getContent().get(0)), HttpStatus.OK);
 		}
-		return q;
+		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 	}
 }
