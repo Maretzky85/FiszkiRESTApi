@@ -28,7 +28,6 @@ public class UserModel implements UserDetails {
 	String email;
 
 	@NotNull
-	@JsonIgnore
 	String password;
 
 	@OneToMany(mappedBy = "user")
@@ -44,10 +43,11 @@ public class UserModel implements UserDetails {
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-//		if (authorities.isEmpty()){
-//			authorities.add(new SimpleGrantedAuthority("ROLE_" + role.role.toUpperCase()));
-//			System.out.println(authorities);
-//		}
+		System.out.println(role);
+		if (authorities.isEmpty()){
+			authorities.add(new SimpleGrantedAuthority(role.role.toUpperCase()));
+			System.out.println(authorities);
+		}
 		return authorities;
 	}
 
