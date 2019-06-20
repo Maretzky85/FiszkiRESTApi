@@ -14,6 +14,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 
+import static com.sikoramarek.fiszki.authentication.SecurityConstants.HEADER_STRING;
 import static com.sikoramarek.fiszki.authentication.SecurityConstants.SIGN_UP_URL;
 
 @EnableWebSecurity
@@ -31,7 +32,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 		http.cors().and().csrf().disable().authorizeRequests()
 				.antMatchers(HttpMethod.GET, "/**").permitAll()
 				.antMatchers(HttpMethod.POST, SIGN_UP_URL).permitAll()
-				.antMatchers(HttpMethod.GET, "/users**").authenticated()
+				.antMatchers(HttpMethod.GET, "/users**").hasAuthority("ADMIN")
 				.anyRequest().authenticated()
 				.and()
 				.addFilter(new JWTAuthenticationFilter(authenticationManager()))
@@ -49,11 +50,11 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 	CorsConfigurationSource corsConfigurationSource() {
 		final CorsConfiguration configuration = new CorsConfiguration();
 		configuration.applyPermitDefaultValues();
-//		configuration.setAllowedOrigins(Arrays.asList("*"));
-		configuration.setAllowedOrigins(Arrays.asList("http://fiszki.sikoramarek.com", "http://www.fiszki.sikoramarek.com"));
+		configuration.setAllowedOrigins(Arrays.asList("*"));
+//		configuration.setAllowedOrigins(Arrays.asList("https://fiszki.sikoramarek.com", "https://www.fiszki.sikoramarek.com"));
 		configuration.setAllowedMethods(Arrays.asList("GET", "PUT", "DELETE", "POST"));
-		configuration.setExposedHeaders(Arrays.asList("Authorization"));
-		configuration.addAllowedHeader("Authorization");
+		configuration.setExposedHeaders(Arrays.asList(HEADER_STRING));
+		configuration.addAllowedHeader(HEADER_STRING);
 
 		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);

@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-public class TagController extends ReturnController{
+public class TagController extends AbstractController {
 
 	private TagDAO tagDAO;
 	private QuestionsDAO questionsDAO;
@@ -105,6 +105,6 @@ public class TagController extends ReturnController{
 		if (questionPage.hasContent()) {
 			return new ResponseEntity<>(packToArray(questionPage.getContent().get(0)), HttpStatus.OK);
 		}
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		return new ResponseEntity<>(new ArrayList<>(), HttpStatus.OK);
 	}
 }

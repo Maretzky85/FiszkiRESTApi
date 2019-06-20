@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-public class AnswerController extends ReturnController {
+public class AnswerController extends AbstractController {
 
 	private AnswersDAO answersDAO;
 	private QuestionsDAO questionsDAO;
