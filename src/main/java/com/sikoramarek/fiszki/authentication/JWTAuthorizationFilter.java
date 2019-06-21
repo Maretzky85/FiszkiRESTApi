@@ -2,8 +2,11 @@ package com.sikoramarek.fiszki.authentication;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.sikoramarek.fiszki.model.UserPrincipal;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
@@ -49,8 +52,12 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 					.getSubject();
 
 			if (user != null) {
-
-				return new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());
+				System.out.println("JWT Auth Fil: User:" + user);
+				ArrayList auth = new ArrayList();
+				auth.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+				UsernamePasswordAuthenticationToken token1 =
+						new UsernamePasswordAuthenticationToken(user, null, auth);
+				return token1;
 			}
 			return null;
 		}

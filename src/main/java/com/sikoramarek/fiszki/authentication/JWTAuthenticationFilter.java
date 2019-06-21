@@ -35,10 +35,10 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 		try {
 			UserModel creds = new ObjectMapper()
 					.readValue(req.getInputStream(), UserModel.class);
-			System.out.println(creds);
+			System.out.println("JWTAuthFilter: role: " + creds);
 			return authenticationManager.authenticate(
 					new UsernamePasswordAuthenticationToken(
-							creds.getUsername(),
+							creds.getName(),
 							creds.getPassword(),
 							new ArrayList<>())
 			);

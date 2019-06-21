@@ -1,34 +1,35 @@
 package com.sikoramarek.fiszki.controller;
 
+import com.sikoramarek.fiszki.authentication.UserDetailsServiceImpl;
 import com.sikoramarek.fiszki.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.security.Principal;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-import static java.util.stream.Collectors.toList;
 import static org.springframework.http.ResponseEntity.ok;
 
 @RestController
 public class UsersController extends AbstractController {
 
-
+	private UserDetailsService userDetailsService;
 	private BCryptPasswordEncoder bCryptPasswordEncoder;
 
 	@Autowired
 	public UsersController(
-			BCryptPasswordEncoder bCryptPasswordEncoder) {
+			BCryptPasswordEncoder bCryptPasswordEncoder,
+			UserDetailsServiceImpl userDetailsService) {
 		this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+		this.userDetailsService = userDetailsService;
 	}
 
 	@GetMapping("users")
@@ -74,17 +75,20 @@ public class UsersController extends AbstractController {
 	}
 
 	@GetMapping("/me")
-	public ResponseEntity currentUser(Principal principal) {
-		System.out.println(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
-		UserModel userDetails = usersDAO.getUserByName(principal.getName());
-		Map<Object, Object> model = new HashMap<>();
-		model.put("username", userDetails.getUsername());
-		model.put("roles", userDetails.getAuthorities()
-				.stream()
-				.map(a -> a.getAuthority())
-				.collect(toList())
-		);
-		return ok(model);
+	public ResponseEntity currentUser(Principal principal, HttpServletRequest request) {
+		System.out.println("Sec context: "+SecurityContextHolder.getContext().getAuthentication().getAuthorities());
+		System.out.println("principal: "+principal.getName());
+		System.out.println("userdetailserv "+userDetailsService.loadUserByUsername(principal.getName()));
+		System.out.println("reeeeeeeeeeeeeeeprinc "+request.getUserPrincipal());
+//		UserPrincipal userDetails = (UserPrincipal) principal;
+//		Map<Object, Object> model = new HashMap<>();
+//		model.put("username", principal.getName());
+//		model.put("roles", userDetails.getAuthorities()
+//				.stream()
+//				.map(a -> a.getAuthority())
+//				.collect(toList())
+//		);
+		return ok("ok");
 	}
 
 }
