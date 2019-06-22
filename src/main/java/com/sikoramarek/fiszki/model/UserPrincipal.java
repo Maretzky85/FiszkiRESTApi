@@ -11,7 +11,7 @@ public class UserPrincipal extends User {
 	private final UserModel user;
 
 	public UserPrincipal(UserModel user, Collection<? extends GrantedAuthority> authorities) {
-		super(user.getName(), user.getPassword(), AuthorityUtils.createAuthorityList("ROLE_"+user.getRole().role));
+		super(user.getUsername(), user.getPassword(), AuthorityUtils.createAuthorityList("ROLE_"+user.getRole().role));
 		this.user = user;
 	}
 
@@ -19,7 +19,7 @@ public class UserPrincipal extends User {
 	                     boolean credentialsNonExpired,
 	                     boolean accountNonLocked,
 	                     Collection<? extends GrantedAuthority> authorities) {
-		super(user.getName(), user.getPassword(),
+		super(user.getUsername(), user.getPassword(),
 				enabled, accountNonExpired, credentialsNonExpired, accountNonLocked, AuthorityUtils.createAuthorityList("ROLE_"+user.getRole().role));
 		this.user = user;
 	}

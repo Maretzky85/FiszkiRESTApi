@@ -1,4 +1,4 @@
-package com.sikoramarek.fiszki.model.DAO;
+package com.sikoramarek.fiszki.repository;
 
 import com.sikoramarek.fiszki.model.UserModel;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 
 
 @Repository
-public interface UsersDAO extends JpaRepository<UserModel, Long> {
+public interface UserRepository extends JpaRepository<UserModel, Long> {
 
-	UserModel getUserByName(String username);
+	UserModel getUserByUsername(String username);
 }

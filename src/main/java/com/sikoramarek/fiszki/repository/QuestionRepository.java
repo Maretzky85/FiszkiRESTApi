@@ -1,4 +1,4 @@
-package com.sikoramarek.fiszki.model.DAO;
+package com.sikoramarek.fiszki.repository;
 
 import com.sikoramarek.fiszki.model.Question;
 import com.sikoramarek.fiszki.model.Tag;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface QuestionsDAO extends JpaRepository<Question, Long> {
+public interface QuestionRepository extends JpaRepository<Question, Long> {
 
 	Long countQuestionByTagsContaining(Tag tag);
 

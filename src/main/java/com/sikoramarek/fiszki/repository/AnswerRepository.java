@@ -1,4 +1,4 @@
-package com.sikoramarek.fiszki.model.DAO;
+package com.sikoramarek.fiszki.repository;
 
 import com.sikoramarek.fiszki.model.Answer;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,7 +8,7 @@ import java.util.List;
 
 
 @Repository
-public interface AnswersDAO extends JpaRepository<Answer, Long> {
+public interface AnswerRepository extends JpaRepository<Answer, Long> {
 
 	List<Answer> findByQuestion_Id(Long question_id);
 }

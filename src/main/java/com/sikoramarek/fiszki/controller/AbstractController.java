@@ -1,6 +1,6 @@
 package com.sikoramarek.fiszki.controller;
 
-import com.sikoramarek.fiszki.model.DAO.UsersDAO;
+import com.sikoramarek.fiszki.repository.UserRepository;
 import com.sikoramarek.fiszki.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,7 +14,7 @@ import java.util.Optional;
 abstract class AbstractController {
 
 	@Autowired
-	UsersDAO usersDAO;
+	UserRepository usersDAO;
 
 	<T> ResponseEntity<T> returnCollectionIfNotEmpty(T objectToCheck){
 		if (Collection.class.isAssignableFrom(objectToCheck.getClass())){
@@ -48,7 +48,7 @@ abstract class AbstractController {
 
 	public UserModel getUserFromPrincipalIfExist(Principal principal){
 		if (principal != null){
-			UserModel user = usersDAO.getUserByName(principal.getName());
+			UserModel user = usersDAO.getUserByUsername(principal.getName());
 			return user;
 		}
 		return null;

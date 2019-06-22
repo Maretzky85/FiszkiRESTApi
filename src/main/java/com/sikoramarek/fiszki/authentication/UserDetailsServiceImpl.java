@@ -1,7 +1,7 @@
 package com.sikoramarek.fiszki.authentication;
 
-import com.sikoramarek.fiszki.model.DAO.UsersDAO;
-import com.sikoramarek.fiszki.model.Roles;
+import com.sikoramarek.fiszki.repository.UserRepository;
+import com.sikoramarek.fiszki.model.Role;
 import com.sikoramarek.fiszki.model.UserModel;
 import com.sikoramarek.fiszki.model.UserPrincipal;
 import org.springframework.security.core.GrantedAuthority;
@@ -16,31 +16,27 @@ import java.util.List;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
-	private final UsersDAO applicationUserRepository;
+	private final UserRepository applicationUserRepository;
 
-	public UserDetailsServiceImpl(UsersDAO applicationUserRepository) {
+	public UserDetailsServiceImpl(UserRepository applicationUserRepository) {
 		this.applicationUserRepository = applicationUserRepository;
 	}
 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		UserModel applicationUser = applicationUserRepository.getUserByName(username);
+		UserModel applicationUser = applicationUserRepository.getUserByUsername(username);
 		if (applicationUser == null) {
 			throw new UsernameNotFoundException(username);
 		}
-		boolean enabled = true;
-		boolean accountNonExpired = true;
-		boolean credentialsNotExpired = true;
-		boolean accountNonLocked = true;
 		UserPrincipal principal = new UserPrincipal(
 				applicationUser,
-				enabled, accountNonExpired, credentialsNotExpired, accountNonLocked,
+				true, true, true, true,
 				getAuthorities(applicationUser.getRole())
 		);
 		return principal;
 	}
 
-	private List<GrantedAuthority> getAuthorities(Roles role) {
+	private List<GrantedAuthority> getAuthorities(Role role) {
 		ArrayList<GrantedAuthority> roles = new ArrayList<>();
 		roles.add(new SimpleGrantedAuthority("ROLE_"+role.getRole()));
 		return roles;

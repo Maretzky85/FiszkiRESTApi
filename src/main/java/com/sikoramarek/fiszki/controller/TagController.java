@@ -1,8 +1,8 @@
 package com.sikoramarek.fiszki.controller;
 
 import com.sikoramarek.fiszki.model.Answer;
-import com.sikoramarek.fiszki.model.DAO.QuestionsDAO;
-import com.sikoramarek.fiszki.model.DAO.TagDAO;
+import com.sikoramarek.fiszki.repository.QuestionRepository;
+import com.sikoramarek.fiszki.repository.TagRepository;
 import com.sikoramarek.fiszki.model.Question;
 import com.sikoramarek.fiszki.model.Tag;
 import org.hibernate.exception.ConstraintViolationException;
@@ -22,12 +22,12 @@ import java.util.Optional;
 @RestController
 public class TagController extends AbstractController {
 
-	private TagDAO tagDAO;
-	private QuestionsDAO questionsDAO;
+	private TagRepository tagDAO;
+	private QuestionRepository questionsDAO;
 
 	public TagController(
-			@Autowired TagDAO tagDAO,
-			@Autowired QuestionsDAO questionsDAO){
+			@Autowired TagRepository tagDAO,
+			@Autowired QuestionRepository questionsDAO){
 		this.tagDAO = tagDAO;
 		this.questionsDAO = questionsDAO;
 	}

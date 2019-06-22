@@ -1,7 +1,6 @@
 package com.sikoramarek.fiszki.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -11,7 +10,6 @@ import java.util.List;
 @Entity
 @Data
 @Table(name = "users")
-//@JsonIgnoreProperties({ "password", "role", "authorities" })
 public class UserModel{
 
 	@Id
@@ -19,7 +17,8 @@ public class UserModel{
 	Long id;
 
 	@NotNull
-	String name;
+	@Column(name = "name")
+	String username;
 
 	String email;
 
@@ -32,6 +31,6 @@ public class UserModel{
 
 	@ManyToOne(fetch = FetchType.EAGER, optional = false)
 	@JoinColumn(name = "role")
-	Roles role;
+	Role role;
 
 }

@@ -1,10 +1,10 @@
 package com.sikoramarek.fiszki.controller;
 
 import com.sikoramarek.fiszki.model.Answer;
-import com.sikoramarek.fiszki.model.DAO.AnswersDAO;
-import com.sikoramarek.fiszki.model.DAO.QuestionsDAO;
-import com.sikoramarek.fiszki.model.DAO.TagDAO;
-import com.sikoramarek.fiszki.model.DAO.UsersDAO;
+import com.sikoramarek.fiszki.repository.AnswerRepository;
+import com.sikoramarek.fiszki.repository.QuestionRepository;
+import com.sikoramarek.fiszki.repository.TagRepository;
+import com.sikoramarek.fiszki.repository.UserRepository;
 import com.sikoramarek.fiszki.model.Question;
 import com.sikoramarek.fiszki.model.Tag;
 import com.sikoramarek.fiszki.model.UserModel;
@@ -25,16 +25,16 @@ import java.util.Optional;
 
 @RestController
 public class QuestionController extends AbstractController {
-	private QuestionsDAO questionsDAO;
-	private AnswersDAO answersDAO;
-	private TagDAO tagDAO;
-	private UsersDAO usersDAO;
+	private QuestionRepository questionsDAO;
+	private AnswerRepository answersDAO;
+	private TagRepository tagDAO;
+	private UserRepository usersDAO;
 
 	@Autowired
-	public QuestionController(QuestionsDAO questionsDAO,
-	                          TagDAO tagDAO,
-	                          AnswersDAO answersDao,
-	                          UsersDAO usersDAO) {
+	public QuestionController(QuestionRepository questionsDAO,
+	                          TagRepository tagDAO,
+	                          AnswerRepository answersDao,
+	                          UserRepository usersDAO) {
 		this.questionsDAO = questionsDAO;
 		this.tagDAO = tagDAO;
 		this.answersDAO = answersDao;

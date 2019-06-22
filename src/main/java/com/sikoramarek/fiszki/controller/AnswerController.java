@@ -1,8 +1,8 @@
 package com.sikoramarek.fiszki.controller;
 
 import com.sikoramarek.fiszki.model.Answer;
-import com.sikoramarek.fiszki.model.DAO.AnswersDAO;
-import com.sikoramarek.fiszki.model.DAO.QuestionsDAO;
+import com.sikoramarek.fiszki.repository.AnswerRepository;
+import com.sikoramarek.fiszki.repository.QuestionRepository;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -17,12 +17,12 @@ import java.util.Optional;
 @RestController
 public class AnswerController extends AbstractController {
 
-	private AnswersDAO answersDAO;
-	private QuestionsDAO questionsDAO;
+	private AnswerRepository answersDAO;
+	private QuestionRepository questionsDAO;
 
 	public AnswerController (
-			@Autowired AnswersDAO answersDAO,
-			@Autowired QuestionsDAO questionsDAO){
+			@Autowired AnswerRepository answersDAO,
+			@Autowired QuestionRepository questionsDAO){
 
 		this.questionsDAO = questionsDAO;
 		this.answersDAO = answersDAO;
