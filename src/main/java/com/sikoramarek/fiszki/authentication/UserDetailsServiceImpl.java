@@ -42,7 +42,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
 	private List<GrantedAuthority> getAuthorities(Roles role) {
 		ArrayList<GrantedAuthority> roles = new ArrayList<>();
-		roles.add(new SimpleGrantedAuthority(role.getRole()));
+		roles.add(new SimpleGrantedAuthority("ROLE_"+role.getRole()));
 		return roles;
 	}
 

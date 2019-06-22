@@ -2,12 +2,11 @@ package com.sikoramarek.fiszki.authentication;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.sikoramarek.fiszki.model.UserPrincipal;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import javax.servlet.FilterChain;
@@ -21,8 +20,11 @@ import static com.sikoramarek.fiszki.authentication.SecurityConstants.*;
 
 public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
-	public JWTAuthorizationFilter(AuthenticationManager authManager) {
+	UserDetailsServiceImpl userDetailsService;
+
+	public JWTAuthorizationFilter(AuthenticationManager authManager, UserDetailsServiceImpl userDetailsService) {
 		super(authManager);
+		this.userDetailsService = userDetailsService;
 	}
 
 	@Override
@@ -46,17 +48,15 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 		String token = request.getHeader(HEADER_STRING);
 		if (token != null) {
 			// parse the token.
-			String user = JWT.require(Algorithm.HMAC512(SECRET.getBytes()))
+			String userName = JWT.require(Algorithm.HMAC512(SECRET.getBytes()))
 					.build()
 					.verify(token.replace(TOKEN_PREFIX, ""))
 					.getSubject();
 
-			if (user != null) {
-				System.out.println("JWT Auth Fil: User:" + user);
-				ArrayList auth = new ArrayList();
-				auth.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+			if (userName != null) {
+				UserDetails userDetails =  userDetailsService.loadUserByUsername(userName);
 				UsernamePasswordAuthenticationToken token1 =
-						new UsernamePasswordAuthenticationToken(user, null, auth);
+						new UsernamePasswordAuthenticationToken(userName, null, userDetails.getAuthorities());
 				return token1;
 			}
 			return null;
