@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-
 public class UserService {
 
 	private UserRepository userRepository;
@@ -25,23 +24,23 @@ public class UserService {
 	@Autowired
 	public UserService(UserRepository userRepository,
 	                   RoleRepository roleRepository,
-	                   BCryptPasswordEncoder bCryptPasswordEncoder){
+	                   BCryptPasswordEncoder bCryptPasswordEncoder) {
 		this.userRepository = userRepository;
 		this.bCryptPasswordEncoder = bCryptPasswordEncoder;
 		this.roleRepository = roleRepository;
 	}
 
-	public ResponseEntity<List<UserModel>> getAllUsers(){
+	public ResponseEntity<List<UserModel>> getAllUsers() {
 		List<UserModel> users = userRepository.findAll();
-		if (!users.isEmpty()){
+		if (!users.isEmpty()) {
 			users.forEach(userModel -> userModel.setPassword(null));
 			return new ResponseEntity<>(users, HttpStatus.OK);
-		}else {
+		} else {
 			return new ResponseEntity<>(HttpStatus.OK);
 		}
 	}
 
-	public ResponseEntity<UserModel> getUserById(Long id){
+	public ResponseEntity<UserModel> getUserById(Long id) {
 		Optional<UserModel> user = userRepository.findById(id);
 		if (user.isPresent()) {
 			UserModel userToReturn = user.get();
@@ -52,7 +51,7 @@ public class UserService {
 		}
 	}
 
-	public ResponseEntity<UserModel> saveNewUser(UserModel newUser){
+	public ResponseEntity<UserModel> saveNewUser(UserModel newUser) {
 		if (newUser != null) {
 			try {
 				newUser.setPassword(bCryptPasswordEncoder.encode(newUser.getPassword()));

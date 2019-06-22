@@ -1,84 +1,53 @@
 package com.sikoramarek.fiszki.controller;
 
 import com.sikoramarek.fiszki.model.Answer;
-import com.sikoramarek.fiszki.repository.AnswerRepository;
-import com.sikoramarek.fiszki.repository.QuestionRepository;
-import org.hibernate.exception.ConstraintViolationException;
+import com.sikoramarek.fiszki.service.AnswerService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 public class AnswerController extends AbstractController {
 
-	private AnswerRepository answersDAO;
-	private QuestionRepository questionsDAO;
+	private AnswerService answerService;
 
-	public AnswerController (
-			@Autowired AnswerRepository answersDAO,
-			@Autowired QuestionRepository questionsDAO){
-
-		this.questionsDAO = questionsDAO;
-		this.answersDAO = answersDAO;
+	@Autowired
+	public AnswerController(
+			AnswerService answerService) {
+		this.answerService = answerService;
 	}
 
 	@GetMapping("answers")
 	public ResponseEntity<List<Answer>> getAllAnswers() {
-		return returnCollectionIfNotEmpty(answersDAO.findAll());
+		return answerService.getAllAnswers();
 	}
 
-	@GetMapping("answers/{answer_id}")
-	public ResponseEntity<ArrayList<Answer>> getAnswerById(@PathVariable("answer_id") Long answer_id){
-		return returnIfNotEmpty(answersDAO.findById(answer_id));
+	@GetMapping("answers/{answerId}")
+	public ResponseEntity<List<Answer>> getAnswerById(@PathVariable("answerId") Long answerId) {
+		return answerService.getAnswerById(answerId);
 	}
 
-	@PutMapping("answers/{answer_id}")
+	@PutMapping("answers/{answerId}")
 	public ResponseEntity<Answer> editAnswerById(@RequestBody Answer answer,
-	                                             @PathVariable("answer_id") Long answer_id){
-			Optional<Answer> optionalAnswer = answersDAO.findById(answer_id);
-			if (optionalAnswer.isPresent()){
-				Answer editedAnswer = optionalAnswer.get();
-				editedAnswer.setAnswer(answer.getAnswer());
-				answersDAO.save(editedAnswer);
-				return new ResponseEntity<>(editedAnswer, HttpStatus.OK);
-			}else {
-				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-			}
+	                                             @PathVariable("answerId") Long answerId) {
+		return answerService.editAnswerById(answer, answerId);
 	}
 
 	@GetMapping("questions/{question_id}/answers")
-	public ResponseEntity<List<Answer>> getAnswersByQuestionId(@PathVariable("question_id") Long questionId){
-		return returnCollectionIfNotEmpty(answersDAO.findByQuestion_Id(questionId));
+	public ResponseEntity<List<Answer>> getAnswersByQuestionId(@PathVariable("question_id") Long questionId) {
+		return answerService.getAnswersByQuestionId(questionId);
 	}
 
 	@PostMapping("questions/{question_id}/answers")
-	public ResponseEntity<Answer> newAnswer(@RequestBody Answer answer, @PathVariable("question_id") Long question_id){
-		try {
-			answer.setQuestion(questionsDAO.getOne(question_id));
-			answersDAO.save(answer);
-			return new ResponseEntity<>(answer, HttpStatus.OK);
-		}catch (DataAccessException | ConstraintViolationException e){
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
+	public ResponseEntity<Answer> newAnswer(@RequestBody Answer answer, @PathVariable("question_id") Long question_id) {
+		return answerService.newAnswer(answer, question_id);
 	}
 
 	@DeleteMapping("answers/{answer_id}")
-	public ResponseEntity<Answer> deleteAnswer(@PathVariable("answer_id") Long answer_id){
-		Optional<Answer> optionalAnswer = answersDAO.findById(answer_id);
-		if (optionalAnswer.isPresent()){
-			Answer answer = optionalAnswer.get();
-			answersDAO.delete(answer);
-			return new ResponseEntity<>(answer, HttpStatus.OK);
-		}else {
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}
-
+	public ResponseEntity<Answer> deleteAnswer(@PathVariable("answer_id") Long answerId) {
+		return answerService.deleteAnswer(answerId);
 	}
 
 }

@@ -10,7 +10,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-public class UsersController extends AbstractController {
+public class UsersController {
 
 	private UserService userService;
 

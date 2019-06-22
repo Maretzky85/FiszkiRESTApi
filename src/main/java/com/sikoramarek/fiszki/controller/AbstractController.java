@@ -46,12 +46,4 @@ abstract class AbstractController {
 		return returnArray;
 	}
 
-	public UserModel getUserFromPrincipalIfExist(Principal principal){
-		if (principal != null){
-			UserModel user = usersDAO.getUserByUsername(principal.getName());
-			return user;
-		}
-		return null;
-	}
-
 }
