@@ -11,8 +11,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class UserService {
@@ -55,8 +57,10 @@ public class UserService {
 		if (newUser != null) {
 			try {
 				newUser.setPassword(bCryptPasswordEncoder.encode(newUser.getPassword()));
+				Set<Role> roles = new HashSet<>();
 				Role role = roleRepository.findRoleByRoleEquals("USER");
-				newUser.setRole(role);
+				roles.add(role);
+				newUser.setRoles(roles);
 				userRepository.save(newUser);
 			} catch (DataAccessException e) {
 				e.printStackTrace();

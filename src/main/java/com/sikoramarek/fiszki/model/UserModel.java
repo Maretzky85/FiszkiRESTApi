@@ -1,16 +1,18 @@
 package com.sikoramarek.fiszki.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
 @Table(name = "users")
-public class UserModel{
+public class UserModel {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,17 +22,22 @@ public class UserModel{
 	@Column(name = "name")
 	String username;
 
+	@NotNull
 	String email;
 
 	@NotNull
+	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	String password;
 
 	@OneToMany(mappedBy = "user")
 	@JsonBackReference
 	List<Question> questionList;
 
-	@ManyToOne(fetch = FetchType.EAGER, optional = false)
-	@JoinColumn(name = "role")
-	Role role;
+	@ManyToMany(fetch = FetchType.EAGER)
+	@JoinTable(
+			name = "users_roles",
+			joinColumns = @JoinColumn(name = "user_id"),
+			inverseJoinColumns = @JoinColumn(name = "role_id"))
+	Set<Role> roles;
 
 }

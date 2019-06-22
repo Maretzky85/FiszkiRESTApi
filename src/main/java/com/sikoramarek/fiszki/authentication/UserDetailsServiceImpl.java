@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
@@ -31,15 +32,15 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 		UserPrincipal principal = new UserPrincipal(
 				applicationUser,
 				true, true, true, true,
-				getAuthorities(applicationUser.getRole())
+				getAuthorities(applicationUser.getRoles())
 		);
 		return principal;
 	}
 
-	private List<GrantedAuthority> getAuthorities(Role role) {
-		ArrayList<GrantedAuthority> roles = new ArrayList<>();
-		roles.add(new SimpleGrantedAuthority("ROLE_"+role.getRole()));
-		return roles;
+	public static List<GrantedAuthority> getAuthorities(Set<Role > roles) {
+		List<GrantedAuthority> authorities = new ArrayList<>();
+		roles.forEach(role -> authorities.add(new SimpleGrantedAuthority("ROLE_"+role.getRole())));
+		return authorities;
 	}
 
 }
