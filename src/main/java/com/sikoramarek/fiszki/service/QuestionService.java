@@ -61,6 +61,7 @@ public class QuestionService {
 				Collection<Answer> answers = question.getAnswers();
 				answers.forEach(answer -> {
 					answer.setQuestion(question);
+					answer.setUser_id(question.getUser_id());
 					answersRepository.save(answer);
 				});
 			} catch (DataAccessException | ConstraintViolationException e) {

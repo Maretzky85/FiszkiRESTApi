@@ -1,9 +1,14 @@
 package com.sikoramarek.fiszki.model;
 
-import com.fasterxml.jackson.annotation.*;
-import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.sikoramarek.fiszki.authentication.Auditable;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -11,9 +16,10 @@ import java.util.Set;
 
 @Entity
 @Data
-@EqualsAndHashCode(exclude = "tags")
+@EqualsAndHashCode(exclude = {"tags", "answers"})
 @Table(name = "questions")
-public class Question {
+@EntityListeners(AuditingEntityListener.class)
+public class Question extends Auditable<UserModel> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,11 +37,6 @@ public class Question {
 			generator = ObjectIdGenerators.PropertyGenerator.class,
 			property = "id")
 	private Set<Answer> answers;
-
-	@ToString.Exclude
-	@ManyToOne(fetch = FetchType.EAGER, optional = false)
-	@JoinColumn(name = "user_id", nullable = false)
-	private UserModel user;
 
 	@ToString.Exclude
 	@ManyToMany(fetch = FetchType.EAGER)

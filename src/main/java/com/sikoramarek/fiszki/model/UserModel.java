@@ -29,7 +29,7 @@ public class UserModel {
 	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	String password;
 
-	@OneToMany(mappedBy = "user")
+	@OneToMany(mappedBy = "user_id")
 	@JsonBackReference
 	List<Question> questionList;
 

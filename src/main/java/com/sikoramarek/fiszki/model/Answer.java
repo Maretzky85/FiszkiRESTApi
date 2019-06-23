@@ -3,6 +3,7 @@ package com.sikoramarek.fiszki.model;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.sikoramarek.fiszki.authentication.Auditable;
 import lombok.*;
 
 import javax.persistence.*;
@@ -12,7 +13,7 @@ import javax.validation.constraints.NotNull;
 @Data
 @Table(name = "answers")
 @EqualsAndHashCode(exclude = "question")
-public class Answer{
+public class Answer extends Auditable<UserModel> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
