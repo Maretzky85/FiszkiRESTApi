@@ -29,9 +29,13 @@ public class UserModel {
 	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	String password;
 
-	@OneToMany(mappedBy = "user_id")
+	@OneToMany(mappedBy = "user")
 	@JsonBackReference
 	List<Question> questionList;
+
+	@OneToMany(mappedBy = "user")
+	@JsonBackReference
+	List<Answer> answerList;
 
 	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(

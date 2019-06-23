@@ -16,7 +16,7 @@ public abstract class Auditable<U> {
 	@CreatedBy
 	@ManyToOne(fetch = FetchType.EAGER, optional = false)
 	@JoinColumn(name = "user_id", nullable = false)
-	private U user_id;
+	private U user;
 
 
 }
