@@ -46,7 +46,7 @@ public class QuestionService {
 	}
 
 	public ResponseEntity<List<Question>> getQuestionById(Long question_id) {
-		Optional<Question> optionalQuestion = questionsRepository.findById(question_id);
+		Optional<Question> optionalQuestion = questionsRepository.findQuestionById(question_id);
 		return optionalQuestion
 				.map(question ->
 						new ResponseEntity<>(Collections.singletonList(question), HttpStatus.OK))

@@ -1,6 +1,6 @@
 package com.sikoramarek.fiszki;
 
-import com.sikoramarek.fiszki.authentication.AuditorAwareImpl;
+import com.sikoramarek.fiszki.service.audit.AuditorAwareImpl;
 import com.sikoramarek.fiszki.model.UserModel;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

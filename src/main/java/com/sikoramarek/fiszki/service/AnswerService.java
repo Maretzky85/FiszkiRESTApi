@@ -33,11 +33,13 @@ public class AnswerService {
 
 	public ResponseEntity<List<Answer>> getAnswerById(Long answerId) {
 		Optional<Answer> optionalAnswer = answerRepository.findById(answerId);
-		if (optionalAnswer.isPresent()) {
-			return new ResponseEntity<>(Collections.singletonList(answerRepository.findById(answerId).get()), HttpStatus.OK);
-		} else {
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}
+		return optionalAnswer.map(
+				answer ->
+						new ResponseEntity<>(
+								Collections.singletonList(answer),
+								HttpStatus.OK))
+				.orElseGet(() ->
+						new ResponseEntity<>(HttpStatus.NOT_FOUND));
 	}
 
 	public ResponseEntity<Answer> editAnswerById(Answer answer, Long answer_id) {

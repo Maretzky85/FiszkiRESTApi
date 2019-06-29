@@ -26,7 +26,7 @@ public class QuestionController extends AbstractController {
 
 	@GetMapping(value = "questions", params = {"page", "size"})
 	public Page<Question> getPageableQuestions(@RequestParam("page") int page, @RequestParam("size") int size) {
-		return questionService.getPageableQuestions(size, page);
+		return questionService.getPageableQuestions(page, size);
 	}
 
 	@GetMapping("questions/{questionId}")

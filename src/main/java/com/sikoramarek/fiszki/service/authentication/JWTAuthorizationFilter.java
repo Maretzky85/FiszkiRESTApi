@@ -1,10 +1,9 @@
-package com.sikoramarek.fiszki.authentication;
+package com.sikoramarek.fiszki.service.authentication;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
@@ -15,7 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-import static com.sikoramarek.fiszki.authentication.SecurityConstants.*;
+import static com.sikoramarek.fiszki.service.authentication.SecurityConstants.*;
 
 public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
@@ -32,10 +31,12 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 	                                FilterChain chain) throws IOException, ServletException {
 		String header = req.getHeader(HEADER_STRING);
 
+
 		if (header == null || !header.startsWith(TOKEN_PREFIX)) {
 			chain.doFilter(req, res);
 			return;
 		}
+
 
 		UsernamePasswordAuthenticationToken authentication = getAuthentication(req);
 
@@ -53,7 +54,7 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 					.getSubject();
 
 			if (userName != null) {
-				UserDetails userDetails =  userDetailsService.loadUserByUsername(userName);
+				UserDetails userDetails = userDetailsService.loadUserByUsername(userName);
 				UsernamePasswordAuthenticationToken token1 =
 						new UsernamePasswordAuthenticationToken(userName, null, userDetails.getAuthorities());
 				return token1;

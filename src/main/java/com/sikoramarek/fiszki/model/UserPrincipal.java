@@ -1,6 +1,6 @@
 package com.sikoramarek.fiszki.model;
 
-import com.sikoramarek.fiszki.authentication.UserDetailsServiceImpl;
+import com.sikoramarek.fiszki.service.authentication.UserDetailsServiceImpl;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 

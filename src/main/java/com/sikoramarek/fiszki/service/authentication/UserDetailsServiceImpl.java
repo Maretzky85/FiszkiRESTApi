@@ -1,4 +1,4 @@
-package com.sikoramarek.fiszki.authentication;
+package com.sikoramarek.fiszki.service.authentication;
 
 import com.sikoramarek.fiszki.repository.UserRepository;
 import com.sikoramarek.fiszki.model.Role;

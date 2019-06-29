@@ -1,4 +1,4 @@
-package com.sikoramarek.fiszki.authentication;
+package com.sikoramarek.fiszki.service.audit;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -47,8 +47,6 @@ public class UserService {
 		if (user.isPresent()) {
 			UserModel userToReturn = user.get();
 			userToReturn.setPassword(null);
-			System.out.println(userToReturn.getQuestionList());
-			System.out.println(userToReturn.getAnswerList());
 			return new ResponseEntity<>(userToReturn, HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);

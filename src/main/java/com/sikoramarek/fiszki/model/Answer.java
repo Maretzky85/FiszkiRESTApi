@@ -3,7 +3,7 @@ package com.sikoramarek.fiszki.model;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import com.sikoramarek.fiszki.authentication.Auditable;
+import com.sikoramarek.fiszki.service.audit.Auditable;
 import lombok.*;
 
 import javax.persistence.*;

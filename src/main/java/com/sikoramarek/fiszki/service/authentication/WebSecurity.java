@@ -1,4 +1,4 @@
-package com.sikoramarek.fiszki.authentication;
+package com.sikoramarek.fiszki.service.authentication;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
@@ -14,8 +14,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 
-import static com.sikoramarek.fiszki.authentication.SecurityConstants.HEADER_STRING;
-import static com.sikoramarek.fiszki.authentication.SecurityConstants.SIGN_UP_URL;
+import static com.sikoramarek.fiszki.service.authentication.SecurityConstants.HEADER_STRING;
+import static com.sikoramarek.fiszki.service.authentication.SecurityConstants.SIGN_UP_URL;
 
 @EnableWebSecurity
 public class WebSecurity extends WebSecurityConfigurerAdapter {
@@ -51,11 +51,12 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 	CorsConfigurationSource corsConfigurationSource() {
 		final CorsConfiguration configuration = new CorsConfiguration();
 		configuration.applyPermitDefaultValues();
-		configuration.setAllowedOrigins(Arrays.asList("*"));
-//		configuration.setAllowedOrigins(Arrays.asList("https://fiszki.sikoramarek.com", "https://www.fiszki.sikoramarek.com"));
+//		configuration.setAllowedOrigins(Arrays.asList("*"));
+		configuration.setAllowedOrigins(Arrays.asList("https://fiszki.sikoramarek.com", "https://www.fiszki.sikoramarek.com"));
 		configuration.setAllowedMethods(Arrays.asList("GET", "PUT", "DELETE", "POST"));
-		configuration.setExposedHeaders(Arrays.asList(HEADER_STRING));
+		configuration.setExposedHeaders(Arrays.asList(HEADER_STRING, "roles"));
 		configuration.addAllowedHeader(HEADER_STRING);
+		configuration.addAllowedHeader("roles");
 
 		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);

@@ -30,11 +30,11 @@ public class UserModel {
 	String password;
 
 	@OneToMany(mappedBy = "user")
-	@JsonBackReference
+	@JsonBackReference(value = "questions")
 	List<Question> questionList;
 
 	@OneToMany(mappedBy = "user")
-	@JsonBackReference
+	@JsonBackReference(value = "answers")
 	List<Answer> answerList;
 
 	@ManyToMany(fetch = FetchType.EAGER)

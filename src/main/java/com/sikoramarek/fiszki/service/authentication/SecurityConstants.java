@@ -1,4 +1,4 @@
-package com.sikoramarek.fiszki.authentication;
+package com.sikoramarek.fiszki.service.authentication;
 
 public class SecurityConstants {
 	public static final String SECRET = "SecretKeyToGenJWTs";
