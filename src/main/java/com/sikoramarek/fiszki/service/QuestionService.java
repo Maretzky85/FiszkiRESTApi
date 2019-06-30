@@ -53,7 +53,7 @@ public class QuestionService {
 
 	public Page<Question> getPageableQuestions(int page, int size) {
 		if (checkForAdmin()){
-			return questionsRepository.findAll(PageRequest.of(0, 10));
+			return questionsRepository.findAll(PageRequest.of(page, size));
 		}
 		return questionsRepository.findAllByAcceptedTrue(PageRequest.of(page, size));
 	}
@@ -100,7 +100,7 @@ public class QuestionService {
 	}
 
 	public ResponseEntity<Question> deleteQuestion(Long question_id) {
-		Optional<Question> optionalQuestion = questionsRepository.findById(question_id);
+		Optional<Question> optionalQuestion = questionsRepository.findQuestionById(question_id);
 		if (optionalQuestion.isPresent()) {
 			Question question = optionalQuestion.get();
 			questionsRepository.delete(question);
