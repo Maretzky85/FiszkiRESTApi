@@ -95,7 +95,7 @@ public class TagService {
 		Long quantity = questionRepository.countQuestionByTagsContaining(tag);
 		int index = (int) (Math.random() * quantity);
 		Page<Question> questionPage = questionRepository
-				.findAllByTagsContaining(tag, PageRequest.of(index, 1, Sort.unsorted()));
+				.findAllByTagsContainingAndAcceptedTrue(tag, PageRequest.of(index, 1, Sort.unsorted()));
 		if (questionPage.hasContent()) {
 			return new ResponseEntity<>(Collections.singletonList(questionPage.getContent().get(0)), HttpStatus.OK);
 		}

@@ -1,8 +1,6 @@
 package com.sikoramarek.fiszki.service;
 
-import com.sikoramarek.fiszki.model.Answer;
-import com.sikoramarek.fiszki.model.Question;
-import com.sikoramarek.fiszki.model.Tag;
+import com.sikoramarek.fiszki.model.*;
 import com.sikoramarek.fiszki.repository.AnswerRepository;
 import com.sikoramarek.fiszki.repository.QuestionRepository;
 import com.sikoramarek.fiszki.repository.TagRepository;
@@ -12,13 +10,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.validation.ConstraintViolationException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.security.Principal;
+import java.util.*;
 
 @Service
 public class QuestionService {
@@ -37,12 +35,27 @@ public class QuestionService {
 
 	}
 
+	private boolean checkForAdmin() {
+		Collection<? extends GrantedAuthority> authority = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+		if (authority.stream().anyMatch(o -> ((GrantedAuthority) o).getAuthority().toString().equals("ROLE_ADMIN"))){
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	public Page<Question> getAllQuestions() {
-		return questionsRepository.findAll(PageRequest.of(0, 10));
+		if (checkForAdmin()) {
+			return questionsRepository.findAll(PageRequest.of(0, 10));
+		}
+		return questionsRepository.findAllByAcceptedTrue(PageRequest.of(0, 10));
 	}
 
 	public Page<Question> getPageableQuestions(int page, int size) {
-		return questionsRepository.findAll(PageRequest.of(page, size));
+		if (checkForAdmin()){
+			return questionsRepository.findAll(PageRequest.of(0, 10));
+		}
+		return questionsRepository.findAllByAcceptedTrue(PageRequest.of(page, size));
 	}
 
 	public ResponseEntity<List<Question>> getQuestionById(Long question_id) {
@@ -98,12 +111,17 @@ public class QuestionService {
 	}
 
 	public ResponseEntity<List<Question>> getRandom() {
-		Long quantity = questionsRepository.count();
+		Long quantity = questionsRepository.countByAcceptedTrue();
 		int index = (int) (Math.random() * quantity);
-		Page<Question> questionPage = questionsRepository.findAll(PageRequest.of(index, 1, Sort.unsorted()));
+		Page<Question> questionPage = questionsRepository.findAllByAcceptedTrue(PageRequest.of(index, 1, Sort.unsorted()));
 		if (questionPage.hasContent()) {
 			return new ResponseEntity<>(Collections.singletonList(questionPage.getContent().get(0)), HttpStatus.OK);
 		}
 		return new ResponseEntity<>(Collections.emptyList(), HttpStatus.OK);
+	}
+
+	public ResponseEntity<Page<Question>> getUnaccepted(int page, int size) {
+		Page<Question> questionList = questionsRepository.getQuestionsByAcceptedFalse(PageRequest.of(page, size));
+		return new ResponseEntity<>(questionList, HttpStatus.OK);
 	}
 }

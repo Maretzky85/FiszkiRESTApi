@@ -1,7 +1,5 @@
 package com.sikoramarek.fiszki.controller;
 
-import com.sikoramarek.fiszki.repository.QuestionRepository;
-import com.sikoramarek.fiszki.repository.TagRepository;
 import com.sikoramarek.fiszki.model.Question;
 import com.sikoramarek.fiszki.model.Tag;
 import com.sikoramarek.fiszki.service.TagService;
@@ -12,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-public class TagController extends AbstractController {
+public class TagController{
 
 	private TagService tagService;
 

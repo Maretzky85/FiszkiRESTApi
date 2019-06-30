@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-public class AnswerController extends AbstractController {
+public class AnswerController{
 
 	private AnswerService answerService;
 

@@ -12,6 +12,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.DefaultValue;
 import java.util.Set;
 
 @Entity
@@ -45,5 +46,6 @@ public class Question extends Auditable<UserModel> {
 			joinColumns = @JoinColumn(name = "question_id"),
 			inverseJoinColumns = @JoinColumn(name = "tag_id"))
 	private Set<Tag> tags;
-
+	
+	private boolean accepted;
 }

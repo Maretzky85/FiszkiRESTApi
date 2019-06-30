@@ -32,6 +32,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		http.cors().and().csrf().disable().authorizeRequests()
 				.antMatchers(HttpMethod.GET, "/users**").hasRole("ADMIN")
+				.antMatchers( "/questions/admin**").hasRole("ADMIN")
 				.antMatchers(HttpMethod.GET, "/**").permitAll()
 				.antMatchers(HttpMethod.POST, SIGN_UP_URL).permitAll()
 				.anyRequest().authenticated()
@@ -51,8 +52,8 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 	CorsConfigurationSource corsConfigurationSource() {
 		final CorsConfiguration configuration = new CorsConfiguration();
 		configuration.applyPermitDefaultValues();
-//		configuration.setAllowedOrigins(Arrays.asList("*"));
-		configuration.setAllowedOrigins(Arrays.asList("https://fiszki.sikoramarek.com", "https://www.fiszki.sikoramarek.com"));
+		configuration.setAllowedOrigins(Arrays.asList("*"));
+//		configuration.setAllowedOrigins(Arrays.asList("https://fiszki.sikoramarek.com", "https://www.fiszki.sikoramarek.com"));
 		configuration.setAllowedMethods(Arrays.asList("GET", "PUT", "DELETE", "POST"));
 		configuration.setExposedHeaders(Arrays.asList(HEADER_STRING, "roles"));
 		configuration.addAllowedHeader(HEADER_STRING);

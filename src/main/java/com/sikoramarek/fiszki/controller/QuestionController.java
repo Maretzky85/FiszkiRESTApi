@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-public class QuestionController extends AbstractController {
+public class QuestionController{
 
 	private QuestionService questionService;
 
@@ -54,4 +54,7 @@ public class QuestionController extends AbstractController {
 	public ResponseEntity<List<Question>> getRandom() {
 		return questionService.getRandom();
 	}
+
+	@GetMapping("questions/admin")
+	public ResponseEntity<Page<Question>> getUnaccepted() {return questionService.getUnaccepted(0, 10); }
 }
