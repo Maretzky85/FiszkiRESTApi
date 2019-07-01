@@ -1,7 +1,6 @@
 package com.sikoramarek.fiszki.model;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.*;
 import com.sikoramarek.fiszki.service.audit.Auditable;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -12,14 +11,16 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.DefaultValue;
 import java.util.Set;
 
 @Entity
 @Data
-@EqualsAndHashCode(exclude = {"tags", "answers"})
+@EqualsAndHashCode(exclude = {"tags", "answers", "usersKnownThisQuestion"})
 @Table(name = "questions")
 @EntityListeners(AuditingEntityListener.class)
+@JsonIdentityInfo(
+		generator = ObjectIdGenerators.PropertyGenerator.class,
+		property = "id")
 public class Question extends Auditable<UserModel> {
 
 	@Id
@@ -46,6 +47,15 @@ public class Question extends Auditable<UserModel> {
 			joinColumns = @JoinColumn(name = "question_id"),
 			inverseJoinColumns = @JoinColumn(name = "tag_id"))
 	private Set<Tag> tags;
+
+	@ManyToMany
+	@JsonIgnore
+	@JoinTable(
+			name = "user_known_question",
+			joinColumns = @JoinColumn(name = "question_id"),
+			inverseJoinColumns = @JoinColumn(name = "user_id")
+	)
+	private Set<UserModel> usersKnownThisQuestion;
 	
 	private boolean accepted;
 }

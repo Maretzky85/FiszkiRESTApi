@@ -2,6 +2,7 @@ package com.sikoramarek.fiszki.service;
 
 import com.sikoramarek.fiszki.model.Role;
 import com.sikoramarek.fiszki.model.UserModel;
+import com.sikoramarek.fiszki.repository.QuestionRepository;
 import com.sikoramarek.fiszki.repository.RoleRepository;
 import com.sikoramarek.fiszki.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +21,7 @@ import java.util.Set;
 @Service
 public class UserService {
 
+	private QuestionService questionService;
 	private UserRepository userRepository;
 	private RoleRepository roleRepository;
 	private BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -71,5 +74,4 @@ public class UserService {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
-
 }

@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -51,8 +52,8 @@ public class QuestionController{
 	}
 
 	@GetMapping("questions/random")
-	public ResponseEntity<List<Question>> getRandom() {
-		return questionService.getRandom();
+	public ResponseEntity<List<Question>> getRandom(Principal principal) {
+		return questionService.getRandom(principal);
 	}
 
 	@GetMapping("questions/admin")

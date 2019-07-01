@@ -1,7 +1,6 @@
 package com.sikoramarek.fiszki.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.*;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -12,6 +11,9 @@ import java.util.Set;
 @Entity
 @Data
 @Table(name = "users")
+@JsonIdentityInfo(
+		generator = ObjectIdGenerators.PropertyGenerator.class,
+		property = "id")
 public class UserModel {
 
 	@Id
@@ -43,5 +45,9 @@ public class UserModel {
 			joinColumns = @JoinColumn(name = "user_id"),
 			inverseJoinColumns = @JoinColumn(name = "role_id"))
 	Set<Role> roles;
+
+	@ManyToMany(mappedBy = "usersKnownThisQuestion")
+	@JsonBackReference(value = "knownQuestions")
+	Set<Question> knownQuestions;
 
 }

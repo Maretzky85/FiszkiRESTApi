@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,7 +19,13 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 
 	Long countQuestionByTagsContaining(Tag tag);
 
+	Long countQuestionsByTagsContainingAndAcceptedTrueAndIdNotIn(Tag tag, Collection<Long> ids);
+
 	Long countByAcceptedTrue();
+
+	Long countQuestionByAcceptedTrueAndIdNotIn(Collection<Long> ids);
+
+	Page<Question> findQuestionsByIdNotIn(Collection<Long> ids, Pageable pageable);
 
 	Page<Question> getQuestionsByAcceptedFalse(Pageable pageable);
 
@@ -29,6 +36,9 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 	Page<Question> findAllByAcceptedTrue(Pageable pageable);
 
 	Page<Question> findAllByTagsContainingAndAcceptedTrue(Tag tag, Pageable pageable);
+
+	Page<Question> findQuestionsByIdNotInAndAcceptedTrueAndTagsContaining(
+			Collection<Long> questions, Tag tag, Pageable pageable);
 
 	Optional<Question> findQuestionById(Long questionID);
 

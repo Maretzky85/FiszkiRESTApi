@@ -2,30 +2,35 @@ package com.sikoramarek.fiszki.service;
 
 import com.sikoramarek.fiszki.model.Question;
 import com.sikoramarek.fiszki.model.Tag;
+import com.sikoramarek.fiszki.model.UserPrincipal;
 import com.sikoramarek.fiszki.repository.QuestionRepository;
 import com.sikoramarek.fiszki.repository.TagRepository;
+import com.sikoramarek.fiszki.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.security.Principal;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class TagService {
 
 	private TagRepository tagRepository;
 	private QuestionRepository questionRepository;
+	private UserRepository userRepository;
 
 	public TagService(TagRepository tagRepository,
-	                  QuestionRepository questionRepository) {
+	                  QuestionRepository questionRepository,
+	                  UserRepository userRepository) {
 		this.tagRepository = tagRepository;
 		this.questionRepository = questionRepository;
+		this.userRepository = userRepository;
 	}
 
 	public ResponseEntity<List<Tag>> getAll() {
@@ -84,7 +89,8 @@ public class TagService {
 		}
 	}
 
-	public ResponseEntity<List<Question>> getRandomByTag(Long tag_id) {
+	public ResponseEntity<List<Question>> getRandomByTag(Principal principal, Long tag_id) {
+		Page<Question> questionPage;
 		Tag tag;
 		Optional<Tag> optionalTag = tagRepository.findById(tag_id);
 		if (optionalTag.isPresent()) {
@@ -92,14 +98,30 @@ public class TagService {
 		} else {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
-		Long quantity = questionRepository.countQuestionByTagsContaining(tag);
-		int index = (int) (Math.random() * quantity);
-		Page<Question> questionPage = questionRepository
-				.findAllByTagsContainingAndAcceptedTrue(tag, PageRequest.of(index, 1, Sort.unsorted()));
+		if (principal != null && getCurrentUserKnownQuestionIds().size() > 0){
+			Long quantity = questionRepository
+					.countQuestionsByTagsContainingAndAcceptedTrueAndIdNotIn(
+							tag, getCurrentUserKnownQuestionIds());
+			int index = (int) (Math.random() * quantity);
+			questionPage = questionRepository.findQuestionsByIdNotInAndAcceptedTrueAndTagsContaining(
+					getCurrentUserKnownQuestionIds(), tag, PageRequest.of(index, 1, Sort.unsorted()));
+		} else {
+			Long quantity = questionRepository.countQuestionByTagsContaining(tag);
+			int index = (int) (Math.random() * quantity);
+			questionPage = questionRepository
+					.findAllByTagsContainingAndAcceptedTrue(tag, PageRequest.of(index, 1, Sort.unsorted()));
+		}
+
 		if (questionPage.hasContent()) {
 			return new ResponseEntity<>(Collections.singletonList(questionPage.getContent().get(0)), HttpStatus.OK);
 		}
 		return new ResponseEntity<>(new ArrayList<>(), HttpStatus.OK);
+	}
+
+	private Collection<Long> getCurrentUserKnownQuestionIds(){
+		String userName =  (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		Collection<Question> knownQuestions = userRepository.getUserByUsername(userName).getKnownQuestions();
+		return knownQuestions.stream().map(Question::getId).collect(Collectors.toList());
 	}
 
 }

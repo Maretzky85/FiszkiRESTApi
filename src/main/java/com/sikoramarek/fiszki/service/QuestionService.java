@@ -4,6 +4,7 @@ import com.sikoramarek.fiszki.model.*;
 import com.sikoramarek.fiszki.repository.AnswerRepository;
 import com.sikoramarek.fiszki.repository.QuestionRepository;
 import com.sikoramarek.fiszki.repository.TagRepository;
+import com.sikoramarek.fiszki.repository.UserRepository;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import javax.validation.ConstraintViolationException;
 import java.security.Principal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class QuestionService {
@@ -24,14 +26,17 @@ public class QuestionService {
 	private QuestionRepository questionsRepository;
 	private AnswerRepository answersRepository;
 	private TagRepository tagRepository;
+	private UserRepository userRepository;
 
 	public QuestionService(QuestionRepository questionsRepository,
 	                       TagRepository tagRepository,
-	                       AnswerRepository answersRepository) {
+	                       AnswerRepository answersRepository,
+	                       UserRepository userRepository) {
 
 		this.questionsRepository = questionsRepository;
 		this.answersRepository = answersRepository;
 		this.tagRepository = tagRepository;
+		this.userRepository = userRepository;
 
 	}
 
@@ -110,10 +115,22 @@ public class QuestionService {
 		}
 	}
 
-	public ResponseEntity<List<Question>> getRandom() {
-		Long quantity = questionsRepository.countByAcceptedTrue();
-		int index = (int) (Math.random() * quantity);
-		Page<Question> questionPage = questionsRepository.findAllByAcceptedTrue(PageRequest.of(index, 1, Sort.unsorted()));
+	public ResponseEntity<List<Question>> getRandom(Principal principal) {
+		Page<Question> questionPage;
+		if (principal != null && getCurrentUserKnownQuestionIds().size() > 0){
+			Long quantity = questionsRepository
+					.countQuestionByAcceptedTrueAndIdNotIn(
+							getCurrentUserKnownQuestionIds());
+			int index = (int) (Math.random() * quantity);
+			questionPage = questionsRepository
+					.findQuestionsByIdNotIn(
+							getCurrentUserKnownQuestionIds(),
+							PageRequest.of(index, 1, Sort.unsorted()));
+		} else {
+			Long quantity = questionsRepository.countByAcceptedTrue();
+			int index = (int) (Math.random() * quantity);
+			questionPage = questionsRepository.findAllByAcceptedTrue(PageRequest.of(index, 1, Sort.unsorted()));
+		}
 		if (questionPage.hasContent()) {
 			return new ResponseEntity<>(Collections.singletonList(questionPage.getContent().get(0)), HttpStatus.OK);
 		}
@@ -123,5 +140,36 @@ public class QuestionService {
 	public ResponseEntity<Page<Question>> getUnaccepted(int page, int size) {
 		Page<Question> questionList = questionsRepository.getQuestionsByAcceptedFalse(PageRequest.of(page, size));
 		return new ResponseEntity<>(questionList, HttpStatus.OK);
+	}
+
+	private Collection<Long> getCurrentUserKnownQuestionIds(){
+		String userName =  (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		Collection<Question> knownQuestions = userRepository.getUserByUsername(userName).getKnownQuestions();
+		return knownQuestions.stream().map(Question::getId).collect(Collectors.toList());
+	}
+
+
+	public ResponseEntity markQuestionAsKnown(Principal principal, Long question_id) {
+		if (principal != null){
+			String userName =  (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+			UserModel user = userRepository.getUserByUsername(userName);
+			Optional<Question> optionalQuestion = questionsRepository.findQuestionById(question_id);
+			if (optionalQuestion.isPresent()){
+				Question question = optionalQuestion.get();
+				Set<UserModel> usersKnownThisQuestion = question.getUsersKnownThisQuestion();
+				if (usersKnownThisQuestion.contains(user)){
+					usersKnownThisQuestion.remove(user);
+				}else {
+					usersKnownThisQuestion.add(user);
+				}
+				questionsRepository.save(question);
+				return new ResponseEntity(HttpStatus.OK);
+			} else {
+				return new ResponseEntity(HttpStatus.NOT_FOUND);
+			}
+		} else {
+			return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+		}
+
 	}
 }

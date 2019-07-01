@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -54,7 +55,7 @@ public class TagController{
 	}
 
 	@GetMapping("tags/{tagId}/questions/random")
-	public ResponseEntity<List<Question>> getRandom(@PathVariable("tagId") Long tagId){
-		return tagService.getRandomByTag(tagId);
+	public ResponseEntity<List<Question>> getRandom(Principal principal, @PathVariable("tagId") Long tagId){
+		return tagService.getRandomByTag(principal, tagId);
 	}
 }

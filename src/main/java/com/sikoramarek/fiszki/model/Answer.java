@@ -1,7 +1,6 @@
 package com.sikoramarek.fiszki.model;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.sikoramarek.fiszki.service.audit.Auditable;
 import lombok.*;
@@ -13,6 +12,9 @@ import javax.validation.constraints.NotNull;
 @Data
 @Table(name = "answers")
 @EqualsAndHashCode(exclude = "question")
+@JsonIdentityInfo(
+		generator = ObjectIdGenerators.PropertyGenerator.class,
+		property = "id")
 public class Answer extends Auditable<UserModel> {
 
 	@Id
@@ -24,10 +26,6 @@ public class Answer extends Auditable<UserModel> {
 
 	@NotNull
 	@ToString.Exclude
-	@JsonIgnore
-	@JsonIdentityInfo(
-			generator = ObjectIdGenerators.PropertyGenerator.class,
-			property = "id")
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "question_id", nullable = false)
 	Question question;
