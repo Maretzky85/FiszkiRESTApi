@@ -37,7 +37,7 @@ public class QuestionService {
 
 	private boolean checkForAdmin() {
 		Collection<? extends GrantedAuthority> authority = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
-		if (authority.stream().anyMatch(o -> ((GrantedAuthority) o).getAuthority().toString().equals("ROLE_ADMIN"))){
+		if (authority.stream().anyMatch(o -> o.getAuthority().equals("ROLE_ADMIN"))){
 			return true;
 		} else {
 			return false;
