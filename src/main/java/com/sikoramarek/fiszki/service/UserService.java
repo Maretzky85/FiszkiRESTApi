@@ -1,5 +1,6 @@
 package com.sikoramarek.fiszki.service;
 
+import com.sikoramarek.fiszki.model.Question;
 import com.sikoramarek.fiszki.model.Role;
 import com.sikoramarek.fiszki.model.UserModel;
 import com.sikoramarek.fiszki.repository.QuestionRepository;
@@ -74,4 +75,5 @@ public class UserService {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
+
 }
