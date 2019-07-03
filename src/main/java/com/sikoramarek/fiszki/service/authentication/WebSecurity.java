@@ -36,6 +36,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 				.antMatchers( "/admin**").hasRole("ADMIN")
 				.antMatchers(HttpMethod.GET, "/**").permitAll()
 				.antMatchers(HttpMethod.POST, SIGN_UP_URL).permitAll()
+				.antMatchers(HttpMethod.POST).authenticated()
 				.anyRequest().authenticated()
 				.and()
 				.addFilter(new JWTAuthenticationFilter(authenticationManager(), userDetailsService))

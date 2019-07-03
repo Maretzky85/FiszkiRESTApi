@@ -51,10 +51,10 @@ public class TagService {
 
 	public ResponseEntity<Tag> newTag(Tag tag) {
 		if (tagRepository.findTagByTagNameEquals(tag.getTagName()).isPresent()) {
-			return new ResponseEntity<>(tag, HttpStatus.NOT_MODIFIED);
+			return new ResponseEntity<>(tag, HttpStatus.OK);
 		} else {
 			tagRepository.save(tag);
-			return new ResponseEntity<>(tag, HttpStatus.OK);
+			return new ResponseEntity<>(tag, HttpStatus.CREATED);
 		}
 	}
 
@@ -64,7 +64,7 @@ public class TagService {
 			List<Question> questionList = questionRepository.findQuestionsByTagsContaining(optionalTag.get());
 			return new ResponseEntity<>(questionList, HttpStatus.OK);
 		} else {
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 	}
 
