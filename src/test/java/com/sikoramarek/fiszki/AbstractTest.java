@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import javax.servlet.Filter;
 import java.io.IOException;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -26,10 +27,13 @@ public abstract class AbstractTest {
 	protected MockMvc mvc;
 	@Autowired
 	WebApplicationContext webApplicationContext;
+	@Autowired
+	private Filter springSecurityFilterChain;
 
 	@Before
 	public void setUp() {
-		mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+		mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+				.addFilters(springSecurityFilterChain).build();
 	}
 
 	protected String mapToJson(Object obj) throws JsonProcessingException {

@@ -14,6 +14,7 @@ import java.util.HashMap;
 import static com.sikoramarek.fiszki.service.authentication.SecurityConstants.HEADER_STRING;
 import static com.sikoramarek.fiszki.service.authentication.SecurityConstants.TOKEN_PREFIX;
 import static org.junit.Assert.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class TagControllerTest extends AbstractTest {
 
@@ -95,16 +96,16 @@ public class TagControllerTest extends AbstractTest {
 		user.setPassword(password);
 		String jsonLogin = "{\"username\":\""+userName+"\", \"password\":\""+password+"\"}";
 		MvcResult mvcResultLogin = mvc.perform(MockMvcRequestBuilders.post(loginUri)
-				.contentType(MediaType.APPLICATION_JSON).content(jsonLogin)).andReturn();
+				.contentType(MediaType.APPLICATION_JSON).content(jsonLogin)).andExpect(status().isOk()).andReturn();
 		String fullToken = mvcResultLogin.getResponse().getHeader(HEADER_STRING);
-		System.out.println("======================================================="+fullToken+"  "+
-				mvcResultLogin.getResponse().getStatus() + "  "+jsonLogin);
+		String token = fullToken.replace(HEADER_STRING, "");
+		System.out.println(token + "    "+ HEADER_STRING + token);
 		String uri = "/tags";
 		Tag tag = new Tag();
 		tag.setTagName("SomeNewTagName");
 		String inputJson = super.mapToJson(tag);
 		MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.post(uri)
-				.contentType(MediaType.APPLICATION_JSON).param(HEADER_STRING, fullToken).content(inputJson)).andReturn();
+				.contentType(MediaType.APPLICATION_JSON).header(HEADER_STRING, token).content(inputJson)).andReturn();
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(201, status);
@@ -125,18 +126,10 @@ public class TagControllerTest extends AbstractTest {
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(403, status);
-		String content = mvcResult.getResponse().getContentAsString();
-		Tag tagResponse = super.mapFromJson(content, Tag.class);
-//		assertNotNull(tagResponse.getId());
-//		assertEquals("SomeNewTagName", tagResponse.getTagName());
 	}
 
 	@Test
 	public void editTag() throws Exception{
-		MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.get("/users")
-				.contentType(MediaType.APPLICATION_JSON)).andReturn();
-		System.out.println(mvcResult.getResponse().getContentAsString());
-		assertTrue(mvcResult.getResponse().getContentAsString().length() > 1);
 	}
 
 	@Test
