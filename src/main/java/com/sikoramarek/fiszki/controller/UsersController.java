@@ -1,5 +1,6 @@
 package com.sikoramarek.fiszki.controller;
 
+import com.sikoramarek.fiszki.model.Question;
 import com.sikoramarek.fiszki.model.UserModel;
 import com.sikoramarek.fiszki.service.QuestionService;
 import com.sikoramarek.fiszki.service.UserService;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.security.Principal;
+import java.util.Collection;
 import java.util.List;
 
 @RestController
@@ -39,6 +41,11 @@ public class UsersController {
 	@PostMapping("users/mark_question/{question_id}")
 	public ResponseEntity markQuestion(Principal principal, @PathVariable("question_id") Long question_id){
 		return questionService.markQuestionAsKnown(principal, question_id);
+	}
+
+	@GetMapping("users/known_questions")
+	public ResponseEntity<Collection<Question>> getKnownQuestions(Principal principal){
+		return questionService.getKnownQuestions(principal);
 	}
 
 	@PostMapping("users")

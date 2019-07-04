@@ -43,6 +43,15 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 	Optional<Question> findQuestionById(Long questionID);
 
 	@Transactional
+	@Query(nativeQuery = true, value =
+			"select q.user_id, question_id, id, title, question, accepted " +
+					"from user_known_question " +
+					"join questions q " +
+					"on user_known_question.question_id = q.id " +
+					"where user_known_question.user_id = ?1")
+	List<Question> findQuestionsByUsersKnownThisQuestion(Long userId);
+
+	@Transactional
 	@Modifying
 	@Query(nativeQuery = true, value = "UPDATE questions q SET accepted = TRUE where q.id = ?1")
 	void setAccepted(Long questionID);

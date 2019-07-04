@@ -15,13 +15,10 @@ import java.util.Set;
 
 @Entity
 @Data
-@EqualsAndHashCode(exclude = {"tags", "answers", "usersKnownThisQuestion"})
+@EqualsAndHashCode(exclude = {"tags", "answers", "usersKnownThisQuestion"}, callSuper = false)
 @Table(name = "questions")
 @EntityListeners(AuditingEntityListener.class)
-@JsonIdentityInfo(
-		generator = ObjectIdGenerators.PropertyGenerator.class,
-		property = "id")
-public class Question extends Auditable<UserModel> {
+public class Question extends Auditable<String> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -56,6 +53,6 @@ public class Question extends Auditable<UserModel> {
 			inverseJoinColumns = @JoinColumn(name = "user_id")
 	)
 	private Set<UserModel> usersKnownThisQuestion;
-	
+
 	private boolean accepted;
 }

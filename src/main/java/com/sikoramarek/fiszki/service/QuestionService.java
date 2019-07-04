@@ -1,6 +1,9 @@
 package com.sikoramarek.fiszki.service;
 
-import com.sikoramarek.fiszki.model.*;
+import com.sikoramarek.fiszki.model.Answer;
+import com.sikoramarek.fiszki.model.Question;
+import com.sikoramarek.fiszki.model.Tag;
+import com.sikoramarek.fiszki.model.UserModel;
 import com.sikoramarek.fiszki.repository.AnswerRepository;
 import com.sikoramarek.fiszki.repository.QuestionRepository;
 import com.sikoramarek.fiszki.repository.TagRepository;
@@ -42,7 +45,7 @@ public class QuestionService {
 
 	private boolean checkForAdmin() {
 		Collection<? extends GrantedAuthority> authority = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
-		if (authority.stream().anyMatch(o -> o.getAuthority().equals("ROLE_ADMIN"))){
+		if (authority.stream().anyMatch(o -> o.getAuthority().equals("ROLE_ADMIN"))) {
 			return true;
 		} else {
 			return false;
@@ -57,7 +60,7 @@ public class QuestionService {
 	}
 
 	public Page<Question> getPageableQuestions(int page, int size) {
-		if (checkForAdmin()){
+		if (checkForAdmin()) {
 			return questionsRepository.findAll(PageRequest.of(page, size));
 		}
 		return questionsRepository.findAllByAcceptedTrue(PageRequest.of(page, size));
@@ -117,7 +120,7 @@ public class QuestionService {
 
 	public ResponseEntity<List<Question>> getRandom(Principal principal) {
 		Page<Question> questionPage;
-		if (principal != null && getCurrentUserKnownQuestionIds().size() > 0){
+		if (principal != null && getCurrentUserKnownQuestionIds().size() > 0) {
 			Long quantity = questionsRepository
 					.countQuestionByAcceptedTrueAndIdNotIn(
 							getCurrentUserKnownQuestionIds());
@@ -142,24 +145,24 @@ public class QuestionService {
 		return new ResponseEntity<>(questionList, HttpStatus.OK);
 	}
 
-	private Collection<Long> getCurrentUserKnownQuestionIds(){
-		String userName =  (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+	private Collection<Long> getCurrentUserKnownQuestionIds() {
+		String userName = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		Collection<Question> knownQuestions = userRepository.getUserByUsername(userName).getKnownQuestions();
 		return knownQuestions.stream().map(Question::getId).collect(Collectors.toList());
 	}
 
 
 	public ResponseEntity markQuestionAsKnown(Principal principal, Long question_id) {
-		if (principal != null){
-			String userName =  (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		if (principal != null) {
+			String userName = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 			UserModel user = userRepository.getUserByUsername(userName);
 			Optional<Question> optionalQuestion = questionsRepository.findQuestionById(question_id);
-			if (optionalQuestion.isPresent()){
+			if (optionalQuestion.isPresent()) {
 				Question question = optionalQuestion.get();
 				Set<UserModel> usersKnownThisQuestion = question.getUsersKnownThisQuestion();
-				if (usersKnownThisQuestion.contains(user)){
+				if (usersKnownThisQuestion.contains(user)) {
 					usersKnownThisQuestion.remove(user);
-				}else {
+				} else {
 					usersKnownThisQuestion.add(user);
 				}
 				questionsRepository.save(question);
@@ -171,5 +174,13 @@ public class QuestionService {
 			return new ResponseEntity(HttpStatus.UNAUTHORIZED);
 		}
 
+	}
+
+	public ResponseEntity<Collection<Question>> getKnownQuestions(Principal principal) {
+		Long userId = userRepository.getId(principal.getName());
+		Collection<Question> knownQuestions =
+				questionsRepository
+						.findQuestionsByUsersKnownThisQuestion(userId);
+		return new ResponseEntity<>(knownQuestions, HttpStatus.OK);
 	}
 }
