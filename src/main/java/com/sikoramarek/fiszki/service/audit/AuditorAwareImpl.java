@@ -23,9 +23,7 @@ public class AuditorAwareImpl implements AuditorAware<UserModel> {
 		if (authentication == null || !authentication.isAuthenticated()) {
 			return Optional.empty();
 		}
-		UserPrincipal userModel =
-				(UserPrincipal) userDetailsService
-						.loadUserByUsername(authentication.getPrincipal().toString());
-		return Optional.of(userModel.getUser());
+
+		return Optional.of(authentication.getPrincipal().toString());
 	}
 }

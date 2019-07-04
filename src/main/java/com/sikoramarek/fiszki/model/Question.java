@@ -19,7 +19,7 @@ import java.util.Set;
 @EqualsAndHashCode(exclude = {"tags", "answers"})
 @Table(name = "questions")
 @EntityListeners(AuditingEntityListener.class)
-public class Question extends Auditable<UserModel> {
+public class Question extends Auditable<String> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

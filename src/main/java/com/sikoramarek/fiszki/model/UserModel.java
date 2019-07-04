@@ -1,12 +1,10 @@
 package com.sikoramarek.fiszki.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -28,14 +26,6 @@ public class UserModel {
 	@NotNull
 	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	String password;
-
-	@OneToMany(mappedBy = "user")
-	@JsonBackReference(value = "questions")
-	List<Question> questionList;
-
-	@OneToMany(mappedBy = "user")
-	@JsonBackReference(value = "answers")
-	List<Answer> answerList;
 
 	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(
