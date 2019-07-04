@@ -13,7 +13,7 @@ import javax.validation.constraints.NotNull;
 @Data
 @Table(name = "answers")
 @EqualsAndHashCode(exclude = "question")
-public class Answer extends Auditable<UserModel> {
+public class Answer extends Auditable<String> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
