@@ -5,7 +5,7 @@ Develop branch status
 
 
 # Despription
-Fiszki project has a beginning as a project for deepening knowlage about Spring Framework in a form that will not go to drawer for forgetting. its hoal its to create a learning place for those who want to use flip cards without having them carried everywhere.
+Fiszki project has a beginning as a project for deepening knowlage about Spring Framework in a form that will not go to drawer for forgetting. its goal its to create a learning place for those who want to use flip cards without having them carried everywhere.
 In time I want this project to help people with learning all kind of stuff related to programming. 
 It is possible that this project will extend that to other fields of interests in future.
 
@@ -36,3 +36,6 @@ It is possible that this project will extend that to other fields of interests i
   - Users can edit / delete items created by them
   - Multiple category chan be choosen for browsing
   - User can set daily / weekly goals to learn number of question or master a topic
+  
+### Plans:
+  - Create Android App that will consume this API
