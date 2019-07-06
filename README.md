@@ -1,6 +1,4 @@
 # FiszkiRESTApi
-
-Develop branch status 
 [![Build Status](https://travis-ci.org/Maretzky85/FiszkiRESTApi.svg?branch=develop)](https://travis-ci.org/Maretzky85/FiszkiRESTApi) 
 ![Code Coverage](https://codecov.io/gh/Maretzky85/FiszkiRESTApi/branch/develop/graph/badge.svg)
 [![Known Vulnerabilities](https://snyk.io/test/github/Maretzky85/FiszkiRESTApi/badge.svg)](https://snyk.io/test/github/Maretzky85/FiszkiRESTApi) 
