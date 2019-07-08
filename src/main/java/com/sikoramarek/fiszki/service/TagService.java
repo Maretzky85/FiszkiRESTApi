@@ -2,7 +2,6 @@ package com.sikoramarek.fiszki.service;
 
 import com.sikoramarek.fiszki.model.Question;
 import com.sikoramarek.fiszki.model.Tag;
-import com.sikoramarek.fiszki.model.UserPrincipal;
 import com.sikoramarek.fiszki.repository.QuestionRepository;
 import com.sikoramarek.fiszki.repository.TagRepository;
 import com.sikoramarek.fiszki.repository.UserRepository;
@@ -33,32 +32,31 @@ public class TagService {
 		this.userRepository = userRepository;
 	}
 
-	public ResponseEntity<List<Tag>> getAll() {
+	public ResponseEntity<Collection<Tag>> getAll() {
 		List<Tag> tags = tagRepository.findAll();
-		if (!tags.isEmpty()) {
-			return new ResponseEntity<>(tags, HttpStatus.OK);
-		} else {
-			return new ResponseEntity<>(HttpStatus.OK);
-		}
+		return new ResponseEntity<>(tags, HttpStatus.OK);
 	}
 
-	public ResponseEntity<List<Tag>> getById(Long tagId) {
+	public ResponseEntity<Collection<Tag>> getById(Long tagId) {
 		Optional<Tag> optionalTag = tagRepository.findById(tagId);
-		return optionalTag
-				.map(tag -> new ResponseEntity<>(Collections.singletonList(tag), HttpStatus.OK))
-				.orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+		return optionalTag.<ResponseEntity<Collection<Tag>>>map(
+				tag -> new ResponseEntity<>(Collections.singleton(tag), HttpStatus.OK))
+				.orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
 	}
 
-	public ResponseEntity<Tag> newTag(Tag tag) {
+	public ResponseEntity<Collection<Tag>> newTag(Tag tag) {
+		if (tag.getTagName().length() == 0) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
 		if (tagRepository.findTagByTagNameEquals(tag.getTagName()).isPresent()) {
-			return new ResponseEntity<>(tag, HttpStatus.OK);
+			return new ResponseEntity<>(HttpStatus.CONFLICT);
 		} else {
 			tagRepository.save(tag);
-			return new ResponseEntity<>(tag, HttpStatus.CREATED);
+			return new ResponseEntity<>(Collections.singleton(tag), HttpStatus.CREATED);
 		}
 	}
 
-	public ResponseEntity<List<Question>> getQuestionsByTagId(Long tagId) {
+	public ResponseEntity<Collection<Question>> getQuestionsByTagId(Long tagId) {
 		Optional<Tag> optionalTag = tagRepository.findById(tagId);
 		if (optionalTag.isPresent()) {
 			List<Question> questionList = questionRepository.findQuestionsByTagsContaining(optionalTag.get());
@@ -98,7 +96,7 @@ public class TagService {
 		} else {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
-		if (principal != null && getCurrentUserKnownQuestionIds().size() > 0){
+		if (principal != null && getCurrentUserKnownQuestionIds().size() > 0) {
 			Long quantity = questionRepository
 					.countQuestionsByTagsContainingAndAcceptedTrueAndIdNotIn(
 							tag, getCurrentUserKnownQuestionIds());
@@ -118,8 +116,8 @@ public class TagService {
 		return new ResponseEntity<>(new ArrayList<>(), HttpStatus.OK);
 	}
 
-	private Collection<Long> getCurrentUserKnownQuestionIds(){
-		String userName =  (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+	private Collection<Long> getCurrentUserKnownQuestionIds() {
+		String userName = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		Collection<Question> knownQuestions = userRepository.getUserByUsername(userName).getKnownQuestions();
 		return knownQuestions.stream().map(Question::getId).collect(Collectors.toList());
 	}
