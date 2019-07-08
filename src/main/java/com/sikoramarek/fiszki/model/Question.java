@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.Type;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
@@ -28,6 +29,7 @@ public class Question extends Auditable<String> {
 	private String title;
 
 	@NotNull
+	@Type(type = "org.hibernate.type.TextType")
 	private String question;
 
 	@OneToMany(mappedBy = "question", fetch = FetchType.EAGER)

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.sikoramarek.fiszki.service.audit.Auditable;
 import lombok.*;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -20,6 +21,7 @@ public class Answer extends Auditable<String> {
 	Long id;
 
 	@NotNull
+	@Type(type = "org.hibernate.type.TextType")
 	String answer;
 
 	@NotNull
