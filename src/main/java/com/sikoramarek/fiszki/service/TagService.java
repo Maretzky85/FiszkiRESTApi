@@ -66,13 +66,19 @@ public class TagService {
 		}
 	}
 
-	public ResponseEntity<Tag> editTag(Tag newTag, Long tagId) {
+	public ResponseEntity<Collection<Tag>> editTag(Tag newTag, Long tagId) {
+		if (newTag.getTagName().length() == 0){
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+		if (tagRepository.findTagByTagNameEquals(newTag.getTagName()).isPresent()){
+			return new ResponseEntity<>(HttpStatus.CONFLICT);
+		}
 		Optional<Tag> tag = tagRepository.findById(tagId);
 		if (tag.isPresent()) {
 			Tag tagToEdit = tag.get();
 			tagToEdit.setTagName(newTag.getTagName());
 			tagRepository.save(tagToEdit);
-			return new ResponseEntity<>(tagToEdit, HttpStatus.OK);
+			return new ResponseEntity<>(Collections.singleton(tagToEdit), HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}

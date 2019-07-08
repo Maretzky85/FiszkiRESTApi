@@ -46,7 +46,7 @@ public class TagController {
 	}
 
 	@PutMapping("tags/{tag_id}")
-	public ResponseEntity<Tag> editTag(@PathVariable("tag_id") Long tagId, @RequestBody Tag newTag) {
+	public ResponseEntity<Collection<Tag>> editTag(@PathVariable("tag_id") Long tagId, @RequestBody Tag newTag) {
 		return tagService.editTag(newTag, tagId);
 	}
 

@@ -62,7 +62,7 @@ INSERT INTO public.questions_tag (question_id, tag_id) VALUES (122, 10);
 INSERT INTO public.questions_tag (question_id, tag_id) VALUES (123, 10);
 INSERT INTO public.questions_tag (question_id, tag_id) VALUES (124, 10);
 INSERT INTO public.questions_tag (question_id, tag_id) VALUES (125, 10);
-INSERT INTO public.questions_tag (question_id, tag_id) VALUES (131, 13);
+INSERT INTO public.questions_tag (question_id, tag_id) VALUES (131, 12);
 
 INSERT INTO public.user_known_question (user_id, question_id) VALUES (38, 120);
 INSERT INTO public.user_known_question (user_id, question_id) VALUES (21, 83);
