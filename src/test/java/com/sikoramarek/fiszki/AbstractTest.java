@@ -75,5 +75,90 @@ public abstract class AbstractTest {
 		String fullToken = mvcResultLogin.getResponse().getHeader(HEADER_STRING);
 		return fullToken.replace(HEADER_STRING, "");
 	}
+
+	public MvcResult performGet(String uri, UserType userType) throws Exception {
+		if (userType == UserType.USER){
+			return mvc.perform(MockMvcRequestBuilders.get(uri)
+					.contentType(MediaType.APPLICATION_JSON)
+					.header(HEADER_STRING, USER_TOKEN))
+					.andReturn();
+		}
+		if (userType == UserType.ADMIN){
+			return mvc.perform(MockMvcRequestBuilders.get(uri)
+					.contentType(MediaType.APPLICATION_JSON)
+					.header(HEADER_STRING, ADMIN_TOKEN))
+					.andReturn();
+		}
+		if (userType == UserType.UNLOGGED) {
+			return mvc.perform(MockMvcRequestBuilders.get(uri)
+					.contentType(MediaType.APPLICATION_JSON))
+					.andReturn();
+		}
+		throw new RuntimeException("Unknown user type");
+
+	}
+
+	public MvcResult performPost(String uri, String jsonContent, UserType userType) throws Exception {
+		if (userType == UserType.USER){
+			return  mvc.perform(MockMvcRequestBuilders.post(uri)
+					.contentType(MediaType.APPLICATION_JSON)
+					.header(HEADER_STRING, USER_TOKEN)
+					.content(jsonContent))
+					.andReturn();
+		}
+		if (userType == UserType.ADMIN){
+			return mvc.perform(MockMvcRequestBuilders.post(uri)
+					.contentType(MediaType.APPLICATION_JSON)
+					.header(HEADER_STRING, ADMIN_TOKEN)
+					.content(jsonContent))
+					.andReturn();
+		}
+		if (userType == UserType.UNLOGGED){
+			return mvc.perform(MockMvcRequestBuilders.post(uri)
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(jsonContent))
+					.andReturn();
+		}
+		throw new RuntimeException("Unknown user type");
+	}
+
+	public MvcResult performPut(String uri, String jsonContent, UserType userType) throws Exception {
+		if (userType == UserType.USER) {
+			return  mvc.perform(MockMvcRequestBuilders.put(uri)
+					.contentType(MediaType.APPLICATION_JSON)
+					.header(HEADER_STRING, USER_TOKEN)
+					.content(jsonContent)).andReturn();
+		}
+		if (userType == UserType.ADMIN) {
+			return  mvc.perform(MockMvcRequestBuilders.put(uri)
+					.contentType(MediaType.APPLICATION_JSON)
+					.header(HEADER_STRING, ADMIN_TOKEN)
+					.content(jsonContent)).andReturn();
+		}
+		if (userType == UserType.UNLOGGED) {
+			return  mvc.perform(MockMvcRequestBuilders.put(uri)
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(jsonContent)).andReturn();
+		}
+		throw new RuntimeException("Unknown user type");
+	}
+
+	public MvcResult performDelete(String uri, UserType userType) throws Exception {
+		if (userType == UserType.USER){
+			return mvc.perform(MockMvcRequestBuilders.delete(uri)
+					.header(HEADER_STRING, USER_TOKEN)
+					.contentType(MediaType.APPLICATION_JSON)).andReturn();
+		}
+		if (userType == UserType.ADMIN){
+			return mvc.perform(MockMvcRequestBuilders.delete(uri)
+					.header(HEADER_STRING, ADMIN_TOKEN)
+					.contentType(MediaType.APPLICATION_JSON)).andReturn();
+		}
+		if (userType == UserType.UNLOGGED){
+			return mvc.perform(MockMvcRequestBuilders.delete(uri)
+					.contentType(MediaType.APPLICATION_JSON)).andReturn();
+		}
+		throw new RuntimeException("Unknown user type");
+	}
 }
 
