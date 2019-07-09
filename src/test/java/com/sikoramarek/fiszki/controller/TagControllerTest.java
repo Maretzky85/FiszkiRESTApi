@@ -1,7 +1,6 @@
 package com.sikoramarek.fiszki.controller;
 
 import com.sikoramarek.fiszki.AbstractTest;
-import com.sikoramarek.fiszki.UserType;
 import com.sikoramarek.fiszki.model.Question;
 import com.sikoramarek.fiszki.model.Tag;
 import com.sikoramarek.fiszki.repository.QuestionRepository;
@@ -12,7 +11,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import static com.sikoramarek.fiszki.service.authentication.SecurityConstants.HEADER_STRING;
+import static com.sikoramarek.fiszki.UserType.UNLOGGED;
+import static com.sikoramarek.fiszki.UserType.USER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -26,8 +26,8 @@ public class TagControllerTest extends AbstractTest {
 
 
 	@Test
-	public void getAllTagsReturnList() throws Exception {
-		MvcResult mvcResult = performGet(uri, UserType.UNLOGGED);
+	public void getAllTagsExpectedList() throws Exception {
+		MvcResult mvcResult = performGet(uri, UNLOGGED);
 
 		int tagCount = (int) tagRepository.count();
 
@@ -41,8 +41,8 @@ public class TagControllerTest extends AbstractTest {
 
 
 	@Test
-	public void getTagByIdExistingReturnSingletonList() throws Exception {
-		MvcResult mvcResult = performGet(uri+"/1", UserType.UNLOGGED);
+	public void getTagByExistingIdExpectedSingletonList() throws Exception {
+		MvcResult mvcResult = performGet(uri + "/1", UNLOGGED);
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(200, status);
@@ -57,8 +57,8 @@ public class TagControllerTest extends AbstractTest {
 
 
 	@Test
-	public void getTagByIdNonExistingReturns404() throws Exception {
-		MvcResult mvcResult = performGet(uri+"/2", UserType.UNLOGGED);
+	public void getTagByNonExistingIdExpects404() throws Exception {
+		MvcResult mvcResult = performGet(uri + "/2", UNLOGGED);
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(404, status);
@@ -69,8 +69,8 @@ public class TagControllerTest extends AbstractTest {
 
 
 	@Test
-	public void getQuestionsByTagIdExistingReturnsListOfQuestions() throws Exception {
-		MvcResult mvcResult = performGet(uri+"/1/questions", UserType.UNLOGGED);
+	public void getQuestionsByExistingTagIdExpectsListOfQuestions() throws Exception {
+		MvcResult mvcResult = performGet(uri + "/1/questions", UNLOGGED);
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(200, status);
@@ -88,7 +88,7 @@ public class TagControllerTest extends AbstractTest {
 
 	@Test
 	public void getQuestionsByTagIdNonExistingReturns404() throws Exception {
-		MvcResult mvcResult = performGet(uri + "/2/questions", UserType.UNLOGGED);
+		MvcResult mvcResult = performGet(uri + "/2/questions", UNLOGGED);
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(404, status);
@@ -103,7 +103,7 @@ public class TagControllerTest extends AbstractTest {
 		tag.setTagName("SomeNewTagName");
 		String requestJson = super.mapToJson(tag);
 
-		MvcResult mvcResult = performPost(uri, requestJson, UserType.USER);
+		MvcResult mvcResult = performPost(uri, requestJson, USER);
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(201, status);
@@ -122,7 +122,7 @@ public class TagControllerTest extends AbstractTest {
 		tag.setTagName("JustSomeName");
 		String requestJson = super.mapToJson(tag);
 
-		MvcResult mvcResult = performPost(uri, requestJson, UserType.UNLOGGED);
+		MvcResult mvcResult = performPost(uri, requestJson, UNLOGGED);
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(401, status);
@@ -138,7 +138,7 @@ public class TagControllerTest extends AbstractTest {
 		tag.setTagName("");
 		String requestJson = super.mapToJson(tag);
 
-		MvcResult mvcResult = performPost(uri, requestJson, UserType.USER);
+		MvcResult mvcResult = performPost(uri, requestJson, USER);
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(400, status);
@@ -153,7 +153,7 @@ public class TagControllerTest extends AbstractTest {
 		tag.setTagName("Java");
 		String requestJson = super.mapToJson(tag);
 
-		MvcResult mvcResult = performPost(uri, requestJson, UserType.USER);
+		MvcResult mvcResult = performPost(uri, requestJson, USER);
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(409, status);
@@ -169,7 +169,7 @@ public class TagControllerTest extends AbstractTest {
 		tag.setTagName("JavaSecond");
 		String requestJson = super.mapToJson(tag);
 
-		MvcResult mvcResult = performPut(uri + "/3", requestJson, UserType.USER);
+		MvcResult mvcResult = performPut(uri + "/3", requestJson, USER);
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(200, status);
@@ -191,7 +191,7 @@ public class TagControllerTest extends AbstractTest {
 		tag.setTagName("JavaSecond");
 		String requestJson = super.mapToJson(tag);
 
-		MvcResult mvcResult = performPut(uri + "/3", requestJson, UserType.UNLOGGED);
+		MvcResult mvcResult = performPut(uri + "/3", requestJson, UNLOGGED);
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(401, status);
@@ -207,7 +207,7 @@ public class TagControllerTest extends AbstractTest {
 		tag.setTagName("JavaSecond");
 		String requestJson = super.mapToJson(tag);
 
-		MvcResult mvcResult = performPut(uri + "/2", requestJson, UserType.USER);
+		MvcResult mvcResult = performPut(uri + "/2", requestJson, USER);
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(404, status);
@@ -223,7 +223,7 @@ public class TagControllerTest extends AbstractTest {
 		tag.setTagName("");
 		String requestJson = super.mapToJson(tag);
 
-		MvcResult mvcResult = performPut(uri + "/3", requestJson, UserType.USER);
+		MvcResult mvcResult = performPut(uri + "/3", requestJson, USER);
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(400, status);
@@ -239,7 +239,7 @@ public class TagControllerTest extends AbstractTest {
 		tag.setTagName("Java");
 		String requestJson = super.mapToJson(tag);
 
-		MvcResult mvcResult = performPut(uri + "/3", requestJson, UserType.USER);
+		MvcResult mvcResult = performPut(uri + "/3", requestJson, USER);
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(409, status);
@@ -262,7 +262,7 @@ public class TagControllerTest extends AbstractTest {
 
 	@Test
 	public void deleteTagLoggedReturns200() throws Exception {
-		MvcResult mvcResult = performDelete(uri + "/12", UserType.USER);
+		MvcResult mvcResult = performDelete(uri + "/12", USER);
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(200, status);
@@ -273,9 +273,7 @@ public class TagControllerTest extends AbstractTest {
 
 	@Test
 	public void deleteNonExistentTagLoggedReturns404() throws Exception {
-		MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.delete(uri + "/100")
-				.contentType(MediaType.APPLICATION_JSON)
-				.header(HEADER_STRING, USER_TOKEN)).andReturn();
+		MvcResult mvcResult = performDelete(uri + "/100", USER);
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(404, status);
@@ -286,7 +284,7 @@ public class TagControllerTest extends AbstractTest {
 
 	@Test
 	public void getRandomNotLoggedTagExistsReturn200() throws Exception {
-		MvcResult mvcResult = performGet(uri + "/1/questions/random", UserType.UNLOGGED);
+		MvcResult mvcResult = performGet(uri + "/1/questions/random", UNLOGGED);
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(200, status);
@@ -302,7 +300,7 @@ public class TagControllerTest extends AbstractTest {
 
 	@Test
 	public void getRandomNotLoggedTagNotExistsReturn404() throws Exception {
-		MvcResult mvcResult = performGet(uri + "/2/questions/random", UserType.UNLOGGED);
+		MvcResult mvcResult = performGet(uri + "/2/questions/random", UNLOGGED);
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(404, status);
@@ -313,7 +311,7 @@ public class TagControllerTest extends AbstractTest {
 
 	@Test
 	public void getRandomNotLoggedTagExistsNoQuestionsExistsReturn200() throws Exception {
-		MvcResult mvcResult = performGet(uri + "/13/questions/random", UserType.UNLOGGED);
+		MvcResult mvcResult = performGet(uri + "/13/questions/random", UNLOGGED);
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(200, status);
