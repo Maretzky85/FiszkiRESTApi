@@ -29,9 +29,7 @@ create table questions
 			primary key,
 	title varchar(255),
 	question text,
-	user_id integer
-		constraint user_id_fkey
-			references users,
+	user_id varchar(255),
 	accepted boolean default false
 );
 
