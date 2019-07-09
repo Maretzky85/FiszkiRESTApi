@@ -38,6 +38,9 @@ public abstract class AbstractTest {
 	private String adminName = "admin12";
 	private String password = "123456";
 
+	protected String USER_TOKEN;
+	private String ADMIN_TOKEN;
+
 	protected MockMvc mvc;
 	@Autowired
 	WebApplicationContext webApplicationContext;
@@ -45,9 +48,11 @@ public abstract class AbstractTest {
 	private Filter springSecurityFilterChain;
 
 	@Before
-	public void setUp() {
+	public void setUp() throws Exception {
 		mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
 				.addFilters(springSecurityFilterChain).build();
+		USER_TOKEN = getToken(userName);
+		ADMIN_TOKEN = getToken(adminName);
 	}
 
 	protected String mapToJson(Object obj) throws JsonProcessingException {
@@ -61,21 +66,12 @@ public abstract class AbstractTest {
 		return objectMapper.readValue(json, clazz);
 	}
 
-	protected String getToken(UserType type) throws Exception {
-		UserModel user = new UserModel();
-		switch (type) {
-			case USER:
-				user.setUsername(userName);
-				break;
-			case ADMIN:
-				user.setUsername(adminName);
-				break;
-		}
-
-		user.setPassword(password);
+	private String getToken(String userName) throws Exception {
 		String jsonLogin = "{\"username\":\""+userName+"\", \"password\":\""+password+"\"}";
 		MvcResult mvcResultLogin = mvc.perform(MockMvcRequestBuilders.post(loginUri)
-				.contentType(MediaType.APPLICATION_JSON).content(jsonLogin)).andExpect(status().isOk()).andReturn();
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(jsonLogin))
+				.andExpect(status().isOk()).andReturn();
 		String fullToken = mvcResultLogin.getResponse().getHeader(HEADER_STRING);
 		return fullToken.replace(HEADER_STRING, "");
 	}

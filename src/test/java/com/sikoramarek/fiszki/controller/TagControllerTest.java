@@ -1,7 +1,6 @@
 package com.sikoramarek.fiszki.controller;
 
 import com.sikoramarek.fiszki.AbstractTest;
-import com.sikoramarek.fiszki.UserType;
 import com.sikoramarek.fiszki.model.Question;
 import com.sikoramarek.fiszki.model.Tag;
 import com.sikoramarek.fiszki.repository.QuestionRepository;
@@ -13,7 +12,8 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static com.sikoramarek.fiszki.service.authentication.SecurityConstants.HEADER_STRING;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class TagControllerTest extends AbstractTest {
 
@@ -64,9 +64,9 @@ public class TagControllerTest extends AbstractTest {
 				.accept(MediaType.APPLICATION_JSON)).andReturn();
 
 		int status = mvcResult.getResponse().getStatus();
-		String result = mvcResult.getResponse().getContentAsString();
-
 		assertEquals(404, status);
+
+		String result = mvcResult.getResponse().getContentAsString();
 		assertEquals("", result);
 	}
 
@@ -77,13 +77,15 @@ public class TagControllerTest extends AbstractTest {
 				.accept(MediaType.APPLICATION_JSON)).andReturn();
 
 		int status = mvcResult.getResponse().getStatus();
+		assertEquals(200, status);
+
+
 		String content = mvcResult.getResponse().getContentAsString();
 		Long questionsCount = questionRepository.countQuestionByTagsContaining(
 				tagRepository.getOne(1L)
 		);
 
 		Question[] questions = super.mapFromJson(content, Question[].class);
-		assertEquals(200, status);
 		assertEquals(questionsCount, Long.valueOf(questions.length));
 
 	}
@@ -94,9 +96,9 @@ public class TagControllerTest extends AbstractTest {
 				.accept(MediaType.APPLICATION_JSON)).andReturn();
 
 		int status = mvcResult.getResponse().getStatus();
-		String content = mvcResult.getResponse().getContentAsString();
-
 		assertEquals(404, status);
+
+		String content = mvcResult.getResponse().getContentAsString();
 		assertEquals("", content);
 	}
 
@@ -107,13 +109,14 @@ public class TagControllerTest extends AbstractTest {
 		String requestJson = super.mapToJson(tag);
 
 		MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.post(uri)
-				.contentType(MediaType.APPLICATION_JSON).header(HEADER_STRING, getToken(UserType.USER)).content(requestJson)).andReturn();
+				.contentType(MediaType.APPLICATION_JSON).header(HEADER_STRING, USER_TOKEN).content(requestJson)).andReturn();
 
 		int status = mvcResult.getResponse().getStatus();
+		assertEquals(201, status);
+
+
 		String content = mvcResult.getResponse().getContentAsString();
 		Tag[] tagResponse = super.mapFromJson(content, Tag[].class);
-
-		assertEquals(201, status);
 		assertNotNull(tagResponse[0].getId());
 		assertEquals(1, tagResponse.length);
 		assertEquals("SomeNewTagName", tagResponse[0].getTagName());
@@ -128,9 +131,10 @@ public class TagControllerTest extends AbstractTest {
 				.contentType(MediaType.APPLICATION_JSON).content(requestJson)).andReturn();
 
 		int status = mvcResult.getResponse().getStatus();
-		String responseString = mvcResult.getResponse().getContentAsString();
-
 		assertEquals(401, status);
+
+
+		String responseString = mvcResult.getResponse().getContentAsString();
 		assertEquals("", responseString);
 	}
 
@@ -141,12 +145,13 @@ public class TagControllerTest extends AbstractTest {
 		String requestJson = super.mapToJson(tag);
 
 		MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.post(uri)
-				.contentType(MediaType.APPLICATION_JSON).header(HEADER_STRING, getToken(UserType.USER)).content(requestJson)).andReturn();
+				.contentType(MediaType.APPLICATION_JSON)
+				.header(HEADER_STRING, USER_TOKEN).content(requestJson)).andReturn();
 
 		int status = mvcResult.getResponse().getStatus();
-		String responseString = mvcResult.getResponse().getContentAsString();
-
 		assertEquals(400, status);
+
+		String responseString = mvcResult.getResponse().getContentAsString();
 		assertEquals("", responseString);
 	}
 
@@ -157,12 +162,13 @@ public class TagControllerTest extends AbstractTest {
 		String requestJson = super.mapToJson(tag);
 
 		MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.post(uri)
-				.contentType(MediaType.APPLICATION_JSON).header(HEADER_STRING, getToken(UserType.USER)).content(requestJson)).andReturn();
+				.contentType(MediaType.APPLICATION_JSON)
+				.header(HEADER_STRING, USER_TOKEN).content(requestJson)).andReturn();
 
 		int status = mvcResult.getResponse().getStatus();
-		String responseString = mvcResult.getResponse().getContentAsString();
-
 		assertEquals(409, status);
+
+		String responseString = mvcResult.getResponse().getContentAsString();
 		assertEquals("", responseString);
 	}
 
@@ -173,14 +179,15 @@ public class TagControllerTest extends AbstractTest {
 		tag.setTagName("JavaSecond");
 		String requestJson = super.mapToJson(tag);
 
-		MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.put(uri+"/3")
-				.contentType(MediaType.APPLICATION_JSON).header(HEADER_STRING, getToken(UserType.USER)).content(requestJson)).andReturn();
+		MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.put(uri + "/3")
+				.contentType(MediaType.APPLICATION_JSON).header(HEADER_STRING, USER_TOKEN).content(requestJson)).andReturn();
 
 		int status = mvcResult.getResponse().getStatus();
+		assertEquals(200, status);
+
+
 		String responseString = mvcResult.getResponse().getContentAsString();
 		Tag[] tagResponse = mapFromJson(responseString, Tag[].class);
-
-		assertEquals(200, status);
 		assertEquals(1, tagResponse.length);
 		assertEquals("JavaSecond", tagResponse[0].getTagName());
 		assertEquals(3L, (long) tagResponse[0].getId());
@@ -195,13 +202,13 @@ public class TagControllerTest extends AbstractTest {
 		tag.setTagName("JavaSecond");
 		String requestJson = super.mapToJson(tag);
 
-		MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.put(uri+"/3")
+		MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.put(uri + "/3")
 				.contentType(MediaType.APPLICATION_JSON).content(requestJson)).andReturn();
 
 		int status = mvcResult.getResponse().getStatus();
-		String responseString = mvcResult.getResponse().getContentAsString();
-
 		assertEquals(401, status);
+
+		String responseString = mvcResult.getResponse().getContentAsString();
 		assertEquals("", responseString);
 	}
 
@@ -212,14 +219,14 @@ public class TagControllerTest extends AbstractTest {
 		tag.setTagName("JavaSecond");
 		String requestJson = super.mapToJson(tag);
 
-		MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.put(uri+"/2")
+		MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.put(uri + "/2")
 				.contentType(MediaType.APPLICATION_JSON)
-				.header(HEADER_STRING, getToken(UserType.USER)).content(requestJson)).andReturn();
+				.header(HEADER_STRING, USER_TOKEN).content(requestJson)).andReturn();
 
 		int status = mvcResult.getResponse().getStatus();
-		String responseString = mvcResult.getResponse().getContentAsString();
-
 		assertEquals(404, status);
+
+		String responseString = mvcResult.getResponse().getContentAsString();
 		assertEquals("", responseString);
 	}
 
@@ -230,14 +237,14 @@ public class TagControllerTest extends AbstractTest {
 		tag.setTagName("");
 		String requestJson = super.mapToJson(tag);
 
-		MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.put(uri+"/3")
+		MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.put(uri + "/3")
 				.contentType(MediaType.APPLICATION_JSON)
-				.header(HEADER_STRING, getToken(UserType.USER)).content(requestJson)).andReturn();
+				.header(HEADER_STRING, USER_TOKEN).content(requestJson)).andReturn();
 
 		int status = mvcResult.getResponse().getStatus();
-		String responseString = mvcResult.getResponse().getContentAsString();
-
 		assertEquals(400, status);
+
+		String responseString = mvcResult.getResponse().getContentAsString();
 		assertEquals("", responseString);
 	}
 
@@ -248,67 +255,68 @@ public class TagControllerTest extends AbstractTest {
 		tag.setTagName("Java");
 		String requestJson = super.mapToJson(tag);
 
-		MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.put(uri+"/3")
+		MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.put(uri + "/3")
 				.contentType(MediaType.APPLICATION_JSON)
-				.header(HEADER_STRING, getToken(UserType.USER)).content(requestJson)).andReturn();
+				.header(HEADER_STRING, USER_TOKEN).content(requestJson)).andReturn();
 
 		int status = mvcResult.getResponse().getStatus();
-		String responseString = mvcResult.getResponse().getContentAsString();
-
 		assertEquals(409, status);
+
+		String responseString = mvcResult.getResponse().getContentAsString();
 		assertEquals("", responseString);
 	}
 
 	@Test
 	public void deleteTagNotLoggedReturns401() throws Exception {
-		MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.delete(uri+"/3")
+		MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.delete(uri + "/3")
 				.contentType(MediaType.APPLICATION_JSON)).andReturn();
 
 		int status = mvcResult.getResponse().getStatus();
-		String responseString = mvcResult.getResponse().getContentAsString();
-
 		assertEquals(401, status);
+
+		String responseString = mvcResult.getResponse().getContentAsString();
 		assertEquals("", responseString);
 	}
 
 	@Test
 	public void deleteTagLoggedReturns200() throws Exception {
-		MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.delete(uri+"/12")
+		MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.delete(uri + "/12")
 				.contentType(MediaType.APPLICATION_JSON)
-				.header(HEADER_STRING, getToken(UserType.USER))).andReturn();
+				.header(HEADER_STRING, USER_TOKEN)).andReturn();
 
 		int status = mvcResult.getResponse().getStatus();
-		String responseString = mvcResult.getResponse().getContentAsString();
-
 		assertEquals(200, status);
+
+		String responseString = mvcResult.getResponse().getContentAsString();
 		assertEquals("", responseString);
 	}
 
 	@Test
 	public void deleteNonExistentTagLoggedReturns404() throws Exception {
-		MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.delete(uri+"/100")
+		MvcResult mvcResult = mvc.perform(MockMvcRequestBuilders.delete(uri + "/100")
 				.contentType(MediaType.APPLICATION_JSON)
-				.header(HEADER_STRING, getToken(UserType.USER))).andReturn();
+				.header(HEADER_STRING, USER_TOKEN)).andReturn();
 
 		int status = mvcResult.getResponse().getStatus();
-		String responseString = mvcResult.getResponse().getContentAsString();
-
 		assertEquals(404, status);
+
+		String responseString = mvcResult.getResponse().getContentAsString();
 		assertEquals("", responseString);
 	}
 
 	@Test
 	public void getRandomNotLoggedTagExistsReturn200() throws Exception {
 		MvcResult mvcResult =
-				mvc.perform(MockMvcRequestBuilders.get(uri+"/1/questions/random")
+				mvc.perform(MockMvcRequestBuilders.get(uri + "/1/questions/random")
 						.accept(MediaType.APPLICATION_JSON))
 						.andReturn();
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(200, status);
+
+
 		String response = mvcResult.getResponse().getContentAsString();
 		Question[] question = super.mapFromJson(response, Question[].class);
-
 		assertNotNull(question[0].getId());
 		assertNotNull(question[0].getTitle());
 		assertNotNull(question[0].getQuestion());
@@ -318,7 +326,7 @@ public class TagControllerTest extends AbstractTest {
 	@Test
 	public void getRandomNotLoggedTagNotExistsReturn404() throws Exception {
 		MvcResult mvcResult =
-				mvc.perform(MockMvcRequestBuilders.get(uri+"/2/questions/random")
+				mvc.perform(MockMvcRequestBuilders.get(uri + "/2/questions/random")
 						.accept(MediaType.APPLICATION_JSON))
 						.andReturn();
 
@@ -332,15 +340,16 @@ public class TagControllerTest extends AbstractTest {
 	@Test
 	public void getRandomNotLoggedTagExistsNoQuestionsExistsReturn200() throws Exception {
 		MvcResult mvcResult =
-				mvc.perform(MockMvcRequestBuilders.get(uri+"/13/questions/random")
+				mvc.perform(MockMvcRequestBuilders.get(uri + "/13/questions/random")
 						.accept(MediaType.APPLICATION_JSON))
 						.andReturn();
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(200, status);
+
+
 		String response = mvcResult.getResponse().getContentAsString();
 		Question[] question = super.mapFromJson(response, Question[].class);
-
 		assertEquals(0, question.length);
 	}
 }
