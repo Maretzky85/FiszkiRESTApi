@@ -1,24 +1,17 @@
 package com.sikoramarek.fiszki.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sikoramarek.fiszki.AbstractTest;
 import com.sikoramarek.fiszki.model.Question;
 import com.sikoramarek.fiszki.model.Role;
 import com.sikoramarek.fiszki.model.UserModel;
-import com.sikoramarek.fiszki.repository.AnswerRepository;
 import com.sikoramarek.fiszki.repository.QuestionRepository;
 import com.sikoramarek.fiszki.repository.RoleRepository;
 import com.sikoramarek.fiszki.repository.UserRepository;
-import com.sikoramarek.fiszki.service.UserService;
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MvcResult;
-
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import static com.sikoramarek.fiszki.UserType.UNLOGGED;
@@ -145,13 +138,13 @@ public class UsersControllerTest extends AbstractTest {
     }
 
     @Test
-    public void markQuestion() throws Exception{
+    public void markQuestion() throws Exception{;
+
         Question question = new Question();
         question.setId((long) 1);
         question.setTitle("uuu");
         question.setQuestion("aaa");
         questionRepository.save(question);
-
 
         MvcResult mvcResult = performGet(uri + "users/mark_question/1", USER);
 
@@ -166,7 +159,7 @@ public class UsersControllerTest extends AbstractTest {
 
     @Test
     public void markQuestionNotLogged() throws Exception{
-        MvcResult mvcResult = performGet(uri + "users/mark_question/{question_id}", UNLOGGED);
+        MvcResult mvcResult = performGet(uri + "users/mark_question/100", UNLOGGED);
 
         int status = mvcResult.getResponse().getStatus();
         assertEquals(401, status);
