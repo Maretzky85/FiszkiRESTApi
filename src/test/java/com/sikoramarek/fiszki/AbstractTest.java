@@ -45,13 +45,14 @@ public abstract class AbstractTest {
     @Autowired
     private Filter springSecurityFilterChain;
     @Autowired
-    BCryptPasswordEncoder bCryptPasswordEncoder;
+	protected
+	BCryptPasswordEncoder bCryptPasswordEncoder;
 
     private String USER_TOKEN;
     private String loginUri = "/login";
-    private String userName = "user";
+    protected String userName = "user";
     private String adminName = "admin";
-    private String password = "123456";
+    protected String password = "123456";
     private String ADMIN_TOKEN;
 
     private static boolean initialized = false;
