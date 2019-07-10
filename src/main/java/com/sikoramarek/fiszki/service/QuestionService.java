@@ -77,7 +77,7 @@ public class QuestionService {
 
 	public ResponseEntity<Question> newQuestion(Question question) {
 		questionsRepository.save(question);
-		if (question.getAnswers().size() > 0) {
+		if (question.getAnswers() != null && question.getAnswers().size() > 0) {
 			try {
 				Collection<Answer> answers = question.getAnswers();
 				answers.forEach(answer -> {
