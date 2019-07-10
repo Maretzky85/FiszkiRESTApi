@@ -25,8 +25,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.Filter;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -39,176 +37,177 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 public abstract class AbstractTest {
 
-	protected MockMvc mvc;
+    protected MockMvc mvc;
 
-	@Autowired
-	WebApplicationContext webApplicationContext;
+    @Autowired
+    WebApplicationContext webApplicationContext;
 
-	@Autowired
-	private Filter springSecurityFilterChain;
-	@Autowired
-	BCryptPasswordEncoder bCryptPasswordEncoder;
+    @Autowired
+    private Filter springSecurityFilterChain;
+    @Autowired
+    BCryptPasswordEncoder bCryptPasswordEncoder;
 
-	private String USER_TOKEN;
-	private String loginUri = "/login";
-	private String userName = "user";
-	private String adminName = "admin";
-	private String password = "123456";
-	private String ADMIN_TOKEN;
+    private String USER_TOKEN;
+    private String loginUri = "/login";
+    private String userName = "user";
+    private String adminName = "admin";
+    private String password = "123456";
+    private String ADMIN_TOKEN;
 
-	private static boolean initialized = false;
+    private static boolean initialized = false;
 
 
-	@Autowired
-	UserRepository userRepository;
+    @Autowired
+    UserRepository userRepository;
 
-	@Before
-	public void setUp() throws Exception {
-		mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
-				.addFilters(springSecurityFilterChain).build();
-		if (!initialized){
-			initUsers();
+    @Before
+    public void setUp() throws Exception {
+        mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+                .addFilters(springSecurityFilterChain).build();
+        if (!initialized) {
+            initUsers();
 
-		}
+        }
 
-		USER_TOKEN = getToken(userName);
-		ADMIN_TOKEN = getToken(adminName);
-	}
+        USER_TOKEN = getToken(userName);
+        ADMIN_TOKEN = getToken(adminName);
+    }
 
-	@Test
-	public void contextLoads() {
-	}
+    @Test
+    public void contextLoads() {
+    }
 
-	protected String mapToJson(Object obj) throws JsonProcessingException {
-		ObjectMapper objectMapper = new ObjectMapper();
-		return objectMapper.writeValueAsString(obj);
-	}
+    protected String mapToJson(Object obj) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.writeValueAsString(obj);
+    }
 
-	protected <T> T mapFromJson(String json, Class<T> clazz)
-			throws JsonParseException, JsonMappingException, IOException {
-		ObjectMapper objectMapper = new ObjectMapper();
-		return objectMapper.readValue(json, clazz);
-	}
+    protected <T> T mapFromJson(String json, Class<T> clazz)
+            throws JsonParseException, JsonMappingException, IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.readValue(json, clazz);
+    }
 
-	private String getToken(String userName) throws Exception {
-		String jsonLogin = "{\"username\":\"" + userName + "\", \"password\":\"" + password + "\"}";
-		MvcResult mvcResultLogin = mvc.perform(MockMvcRequestBuilders.post(loginUri)
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(jsonLogin))
-				.andExpect(status().isOk()).andReturn();
-		String fullToken = mvcResultLogin.getResponse().getHeader(HEADER_STRING);
-		return fullToken.replace(HEADER_STRING, "");
-	}
+    private String getToken(String userName) throws Exception {
+        String jsonLogin = "{\"username\":\"" + userName + "\", \"password\":\"" + password + "\"}";
+        MvcResult mvcResultLogin = mvc.perform(MockMvcRequestBuilders.post(loginUri)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonLogin))
+                .andExpect(status().isOk()).andReturn();
+        String fullToken = mvcResultLogin.getResponse().getHeader(HEADER_STRING);
+        return fullToken.replace(HEADER_STRING, "");
+    }
 
-	public MvcResult performGet(String uri, UserType userType) throws Exception {
-		if (userType == UserType.USER) {
-			return mvc.perform(MockMvcRequestBuilders.get(uri)
-					.contentType(MediaType.APPLICATION_JSON)
-					.header(HEADER_STRING, USER_TOKEN))
-					.andReturn();
-		}
-		if (userType == UserType.ADMIN) {
-			return mvc.perform(MockMvcRequestBuilders.get(uri)
-					.contentType(MediaType.APPLICATION_JSON)
-					.header(HEADER_STRING, ADMIN_TOKEN))
-					.andReturn();
-		}
-		if (userType == UserType.UNLOGGED) {
-			return mvc.perform(MockMvcRequestBuilders.get(uri)
-					.contentType(MediaType.APPLICATION_JSON))
-					.andReturn();
-		}
-		throw new RuntimeException("Unknown user type");
+    public MvcResult performGet(String uri, UserType userType) throws Exception {
+        switch (userType) {
 
-	}
+            case USER:
+                return mvc.perform(MockMvcRequestBuilders.get(uri)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HEADER_STRING, USER_TOKEN))
+                        .andReturn();
+            case ADMIN:
+                return mvc.perform(MockMvcRequestBuilders.get(uri)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HEADER_STRING, ADMIN_TOKEN))
+                        .andReturn();
+            case UNLOGGED:
+                return mvc.perform(MockMvcRequestBuilders.get(uri)
+                        .contentType(MediaType.APPLICATION_JSON))
+                        .andReturn();
+            default:
+                throw new RuntimeException("Unknown user type");
+        }
+    }
 
-	public MvcResult performPost(String uri, String jsonContent, UserType userType) throws Exception {
-		if (userType == UserType.USER) {
-			return mvc.perform(MockMvcRequestBuilders.post(uri)
-					.contentType(MediaType.APPLICATION_JSON)
-					.header(HEADER_STRING, USER_TOKEN)
-					.content(jsonContent))
-					.andReturn();
-		}
-		if (userType == UserType.ADMIN) {
-			return mvc.perform(MockMvcRequestBuilders.post(uri)
-					.contentType(MediaType.APPLICATION_JSON)
-					.header(HEADER_STRING, ADMIN_TOKEN)
-					.content(jsonContent))
-					.andReturn();
-		}
-		if (userType == UserType.UNLOGGED) {
-			return mvc.perform(MockMvcRequestBuilders.post(uri)
-					.contentType(MediaType.APPLICATION_JSON)
-					.content(jsonContent))
-					.andReturn();
-		}
-		throw new RuntimeException("Unknown user type");
-	}
+    public MvcResult performPost(String uri, String jsonContent, UserType userType) throws Exception {
+        switch (userType) {
+            case USER:
+                return mvc.perform(MockMvcRequestBuilders.post(uri)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HEADER_STRING, USER_TOKEN)
+                        .content(jsonContent))
+                        .andReturn();
+            case ADMIN:
+                return mvc.perform(MockMvcRequestBuilders.post(uri)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HEADER_STRING, ADMIN_TOKEN)
+                        .content(jsonContent))
+                        .andReturn();
+            case UNLOGGED:
+                return mvc.perform(MockMvcRequestBuilders.post(uri)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonContent))
+                        .andReturn();
+            default:
+                throw new RuntimeException("Unknown user type");
+        }
+    }
 
-	public MvcResult performPut(String uri, String jsonContent, UserType userType) throws Exception {
-		if (userType == UserType.USER) {
-			return mvc.perform(MockMvcRequestBuilders.put(uri)
-					.contentType(MediaType.APPLICATION_JSON)
-					.header(HEADER_STRING, USER_TOKEN)
-					.content(jsonContent)).andReturn();
-		}
-		if (userType == UserType.ADMIN) {
-			return mvc.perform(MockMvcRequestBuilders.put(uri)
-					.contentType(MediaType.APPLICATION_JSON)
-					.header(HEADER_STRING, ADMIN_TOKEN)
-					.content(jsonContent)).andReturn();
-		}
-		if (userType == UserType.UNLOGGED) {
-			return mvc.perform(MockMvcRequestBuilders.put(uri)
-					.contentType(MediaType.APPLICATION_JSON)
-					.content(jsonContent)).andReturn();
-		}
-		throw new RuntimeException("Unknown user type");
-	}
+    public MvcResult performPut(String uri, String jsonContent, UserType userType) throws Exception {
+        switch (userType) {
 
-	public MvcResult performDelete(String uri, UserType userType) throws Exception {
-		if (userType == UserType.USER) {
-			return mvc.perform(MockMvcRequestBuilders.delete(uri)
-					.header(HEADER_STRING, USER_TOKEN)
-					.contentType(MediaType.APPLICATION_JSON)).andReturn();
-		}
-		if (userType == UserType.ADMIN) {
-			return mvc.perform(MockMvcRequestBuilders.delete(uri)
-					.header(HEADER_STRING, ADMIN_TOKEN)
-					.contentType(MediaType.APPLICATION_JSON)).andReturn();
-		}
-		if (userType == UserType.UNLOGGED) {
-			return mvc.perform(MockMvcRequestBuilders.delete(uri)
-					.contentType(MediaType.APPLICATION_JSON)).andReturn();
-		}
-		throw new RuntimeException("Unknown user type");
-	}
+            case USER:
+                return mvc.perform(MockMvcRequestBuilders.put(uri)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HEADER_STRING, USER_TOKEN)
+                        .content(jsonContent)).andReturn();
+            case ADMIN:
+                return mvc.perform(MockMvcRequestBuilders.put(uri)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HEADER_STRING, ADMIN_TOKEN)
+                        .content(jsonContent)).andReturn();
+            case UNLOGGED:
+                return mvc.perform(MockMvcRequestBuilders.put(uri)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonContent)).andReturn();
+            default:
+                throw new RuntimeException("Unknown user type");
+        }
+    }
 
-	private void initUsers(){
-		Role userRole = new Role();
-		userRole.setId(2L);
-		userRole.setRole("USER");
-		Role adminRole = new Role();
-		adminRole.setId(1L);
-		adminRole.setRole("ADMIN");
-		Set<Role> roles = new HashSet<>();
-		roles.add(userRole);
-		UserModel userModel = new UserModel();
-		userModel.setUsername(userName);
-		userModel.setPassword(bCryptPasswordEncoder.encode(password));
-		userModel.setRoles(roles);
-		userModel.setEmail("blabla@blabla.com");
-		userRepository.save(userModel);
+    public MvcResult performDelete(String uri, UserType userType) throws Exception {
+        switch (userType) {
+            case USER:
+                return mvc.perform(MockMvcRequestBuilders.delete(uri)
+                        .header(HEADER_STRING, USER_TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)).andReturn();
+            case ADMIN:
+                return mvc.perform(MockMvcRequestBuilders.delete(uri)
+                        .header(HEADER_STRING, ADMIN_TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)).andReturn();
+            case UNLOGGED:
+                return mvc.perform(MockMvcRequestBuilders.delete(uri)
+                        .contentType(MediaType.APPLICATION_JSON)).andReturn();
+            default:
+                throw new RuntimeException("Unknown user type");
+        }
+    }
 
-		roles.add(adminRole);
-		UserModel userModel2 = new UserModel();
-		userModel2.setUsername(adminName);
-		userModel2.setPassword(bCryptPasswordEncoder.encode(password));
-		userModel2.setEmail("blabla2@blabla.com");
-		userModel2.setRoles(roles);
-		userRepository.save(userModel2);
-		initialized = true;
-	}
+    private void initUsers() {
+        Role userRole = new Role();
+        userRole.setId(2L);
+        userRole.setRole("USER");
+        Role adminRole = new Role();
+        adminRole.setId(1L);
+        adminRole.setRole("ADMIN");
+        Set<Role> roles = new HashSet<>();
+        roles.add(userRole);
+        UserModel userModel = new UserModel();
+        userModel.setUsername(userName);
+        userModel.setPassword(bCryptPasswordEncoder.encode(password));
+        userModel.setRoles(roles);
+        userModel.setEmail("blabla@blabla.com");
+        userRepository.save(userModel);
+
+        roles.add(adminRole);
+        UserModel userModel2 = new UserModel();
+        userModel2.setUsername(adminName);
+        userModel2.setPassword(bCryptPasswordEncoder.encode(password));
+        userModel2.setEmail("blabla2@blabla.com");
+        userModel2.setRoles(roles);
+        userRepository.save(userModel2);
+        initialized = true;
+    }
 }
 
