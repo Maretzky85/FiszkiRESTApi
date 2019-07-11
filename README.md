@@ -12,14 +12,14 @@ In time I want this project to help people with learning all kind of stuff relat
 It is possible that this project will extend that to other fields of interests in future.
 
 ## Goals for programmers:
-- Deepening knowlage about Spring Framework
+- Deepening knowledge about Spring Framework
   - Boot
   - Security
   - JPA
   - Hibernate
   - Testing with JUnit
 
-- Depeening knowlage about REST API
+- Depeening knowledge about REST API
 
 - Training PostgreSQL knowlage
   - Plan database
