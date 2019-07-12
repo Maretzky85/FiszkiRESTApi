@@ -82,6 +82,11 @@ public abstract class AbstractTest {
         ADMIN_TOKEN = getToken(adminName);
     }
 
+
+    @Test
+    public void contextLoads() {
+    }
+
     protected String mapToJson(Object obj) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.writeValueAsString(obj);
