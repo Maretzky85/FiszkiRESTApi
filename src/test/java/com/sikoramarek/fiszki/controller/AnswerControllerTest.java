@@ -18,72 +18,48 @@ public class AnswerControllerTest extends AbstractTest {
     private AnswerRepository answerRepository;
 
     @Test
-    public void editAnswerByLoggedUserExpects200() throws Exception {
+    public void editAnswerExpects200() throws Exception {
         assertEquals(200, editAnswerStatus(2L, UserType.USER, ""));
-    }
-
-    @Test
-    public void editAnswerByIdByAdminExpects200() throws Exception {
         assertEquals(200, editAnswerStatus(1L, UserType.ADMIN, ""));
     }
 
     @Test
-    public void editAnswerByIdByUnloggedUserExpects401() throws Exception {
+    public void editAnswerExpects401() throws Exception {
         assertEquals(401, editAnswerStatus(1L, UserType.UNLOGGED, ""));
     }
 
     @Test
-    public void editAnswerByIdByLoggedUserExpects404() throws Exception {
+    public void editAnswerExpects404() throws Exception {
         assertEquals(404, editAnswerStatus(2L, UserType.USER, "14444"));
-    }
-
-    @Test
-    public void editAnswerByIdByAdminExpects404() throws Exception {
         assertEquals(404, editAnswerStatus(1L, UserType.ADMIN, "14444"));
     }
 
     @Test
-    public void editAnswerByIdByLoggedUserExpects400() throws Exception {
+    public void editAnswerExpects400() throws Exception {
         assertEquals(400, editAnswerStatus(2L, UserType.USER, ":user"));
-    }
-
-    @Test
-    public void editAnswerByIdByAdminExpects400() throws Exception {
         assertEquals(400, editAnswerStatus(1L, UserType.ADMIN, ":user"));
     }
 
     @Test
-    public void deleteAnswerByIdByLoggedUserExpects200() throws Exception {
+    public void deleteAnswerExpects200() throws Exception {
         assertEquals(200, deleteAnswerStatus(74L, UserType.USER, ""));
-    }
-
-    @Test
-    public void deleteAnswerByIdByAdminExpects200() throws Exception {
         assertEquals(200, deleteAnswerStatus(76L, UserType.ADMIN, ""));
     }
 
     @Test
-    public void deleteAnswerByIdByUnloggedUserExpects401() throws Exception {
+    public void deleteAnswerExpects401() throws Exception {
         assertEquals(401, deleteAnswerStatus(77L, UserType.UNLOGGED, ""));
     }
 
     @Test
-    public void deleteAnswerByIdByLoggedUserAndNoOwnerExpects403() throws Exception {
+    public void deleteAnswerExpects403() throws Exception {
         assertEquals(403, deleteAnswerStatus(87L, UserType.USER, ""));
-    }
-
-    @Test
-    public void deleteAnswerByIdByLoggedUserAndNoAdminExpects403() throws Exception {
         assertEquals(403, deleteAnswerStatus(88L, UserType.USER, ""));
     }
 
     @Test
-    public void deleteAnswerByIdByLoggedUserAndAnswerNotExistsExpects404() throws Exception {
+    public void deleteAnswerExpects404() throws Exception {
         assertEquals(404, deleteAnswerStatus(88L, UserType.USER, "2222222"));
-    }
-
-    @Test
-    public void deleteAnswerByIdByAdminAndAnswerNotExistsExpects404() throws Exception {
         assertEquals(404, deleteAnswerStatus(88L, UserType.ADMIN, "2222222"));
     }
 
@@ -99,10 +75,8 @@ public class AnswerControllerTest extends AbstractTest {
 
         answer = answerRepository.findAnswerById(answerId);
         if (status != 200) {
-            System.out.println("Status different than 200 " + answer.getAnswer());
             assertEquals(beforeAnswerContents, answer.getAnswer());
         } else {
-            System.out.println("Status equals 200 " + answer.getAnswer());
             assertEquals(newAnswerContents, answer.getAnswer());
         }
 
