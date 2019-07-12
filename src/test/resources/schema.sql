@@ -33,22 +33,18 @@ create table questions
 	accepted boolean default false
 );
 
-
 create table answers
 (
-	id serial not null
-		constraint answers_pkey
-			primary key,
-	answer text,
-	question_id integer
-		constraint questions_id_fkey
-			references questions
-				on delete cascade,
-	user_id integer
-		constraint answers_users_id_fk
-			references users
+    id serial not null
+        constraint answers_pkey
+            primary key,
+    answer text,
+    question_id integer
+        constraint questions_id_fkey
+            references questions
+            on delete cascade,
+    user_id varchar(255)
 );
-
 
 create table questions_tag
 (

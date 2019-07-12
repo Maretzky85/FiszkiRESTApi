@@ -6,9 +6,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sikoramarek.fiszki.model.Role;
 import com.sikoramarek.fiszki.model.UserModel;
-import com.sikoramarek.fiszki.repository.UserRepository;
+import com.sikoramarek.fiszki.repository.*;
 import org.junit.Before;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -45,34 +44,44 @@ public abstract class AbstractTest {
     @Autowired
     private Filter springSecurityFilterChain;
     @Autowired
-	protected
-	BCryptPasswordEncoder bCryptPasswordEncoder;
+    BCryptPasswordEncoder bCryptPasswordEncoder;
 
     private String USER_TOKEN;
     private String loginUri = "/login";
-    protected String userName = "user";
+    private String userName = "user";
     private String adminName = "admin";
-    protected String password = "123456";
+    private String password = "123456";
     private String ADMIN_TOKEN;
 
     private static boolean initialized = false;
 
+    @Autowired
+    protected UserRepository userRepository;
 
     @Autowired
-    UserRepository userRepository;
+    protected QuestionRepository questionRepository;
+
+    @Autowired
+    protected AnswerRepository answerRepository;
+
+    @Autowired
+    protected TagRepository tagRepository;
+
+    @Autowired
+    protected RoleRepository roleRepository;
 
     @Before
     public void setUp() throws Exception {
         mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
                 .addFilters(springSecurityFilterChain).build();
+
         if (!initialized) {
             initUsers();
-
         }
-
         USER_TOKEN = getToken(userName);
         ADMIN_TOKEN = getToken(adminName);
     }
+
 
     @Test
     public void contextLoads() {
@@ -101,7 +110,6 @@ public abstract class AbstractTest {
 
     public MvcResult performGet(String uri, UserType userType) throws Exception {
         switch (userType) {
-
             case USER:
                 return mvc.perform(MockMvcRequestBuilders.get(uri)
                         .contentType(MediaType.APPLICATION_JSON)
