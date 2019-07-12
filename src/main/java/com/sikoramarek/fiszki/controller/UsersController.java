@@ -28,16 +28,6 @@ public class UsersController {
 		this.questionService = questionService;
 	}
 
-//	@GetMapping("users")
-//	public ResponseEntity<List<UserModel>> getAllUsers() {
-//		return userService.getAllUsers();
-//	}
-//
-//	@GetMapping("users/{user_id}")
-//	public ResponseEntity<UserModel> getUser(@PathVariable("user_id") long userId) {
-//		return userService.getUserById(userId);
-//	}
-
 	@PostMapping("users/mark_question/{question_id}")
 	public ResponseEntity markQuestion(Principal principal, @PathVariable("question_id") Long question_id){
 		return questionService.markQuestionAsKnown(principal, question_id);
@@ -52,6 +42,4 @@ public class UsersController {
 	public ResponseEntity<UserModel> newUser(@Valid @RequestBody UserModel newUser) {
 		return userService.saveNewUser(newUser);
 	}
-
-
 }

@@ -53,7 +53,7 @@ public class UsersControllerTest extends AbstractTest {
         UserModel[] userModelResponse = super.mapFromJson(responseString, UserModel[].class);
         assertNotNull( userModelResponse[0].getId());
         assertEquals("newUser", userModelResponse[0].getUsername());
-        assertEquals("newUser@user.pl", userModelResponse[0].getPassword());
+        assertEquals("newUser@user.pl", userModelResponse[0].getEmail());
     }
 
     @Test
@@ -115,7 +115,7 @@ public class UsersControllerTest extends AbstractTest {
     }
 
     @Test
-    public void markQuestion() throws Exception{;
+    public void markQuestion() throws Exception {
         Question question = new Question();
         question.setId(666L);
         question.setAccepted(true);
@@ -130,8 +130,7 @@ public class UsersControllerTest extends AbstractTest {
         assertEquals(200, status);
 
         String responseString = mvcResult.getResponse().getContentAsString();
-        Question[] questionsResponse = super.mapFromJson(responseString, Question[].class);
-        assertEquals("uuu", questionsResponse[0].getTitle());
+        assertEquals("", responseString);
     }
 
     @Test
