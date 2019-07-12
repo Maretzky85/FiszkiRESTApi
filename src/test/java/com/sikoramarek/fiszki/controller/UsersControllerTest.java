@@ -6,11 +6,11 @@ import com.sikoramarek.fiszki.model.Role;
 import com.sikoramarek.fiszki.model.UserModel;
 import com.sikoramarek.fiszki.repository.QuestionRepository;
 import com.sikoramarek.fiszki.repository.RoleRepository;
+import com.sikoramarek.fiszki.repository.TagRepository;
 import com.sikoramarek.fiszki.repository.UserRepository;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MvcResult;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -28,19 +28,18 @@ public class UsersControllerTest extends AbstractTest {
 
     private String uri = "/users";
 
-    @Autowired
-    private RoleRepository roleRepository;
-
     @Test
     public void newUser() throws Exception {
         UserModel newUser = new UserModel();
 
         Set<Role> roles = new HashSet<>();
-        Role role = roleRepository.findRoleByRoleEquals("USER");
-        roles.add(role);
+        Role userRole = new Role();
+        userRole.setId(2L);
+        userRole.setRole("USER");
+        roles.add(userRole);
 
         newUser.setUsername("newUser");
-        newUser.setPassword(super.bCryptPasswordEncoder.encode("abc"));
+        newUser.setPassword("123456");
         newUser.setEmail("newUser@user.pl");
         newUser.setRoles(roles);
 
@@ -53,7 +52,6 @@ public class UsersControllerTest extends AbstractTest {
         String responseString = mvcResult.getResponse().getContentAsString();
         UserModel[] userModelResponse = super.mapFromJson(responseString, UserModel[].class);
         assertNotNull( userModelResponse[0].getId());
-        assertEquals(1, userModelResponse.length);
         assertEquals("newUser", userModelResponse[0].getUsername());
         assertEquals("newUser@user.pl", userModelResponse[0].getPassword());
     }
@@ -61,15 +59,9 @@ public class UsersControllerTest extends AbstractTest {
     @Test
     public void newUserNullName() throws Exception {
         UserModel newUser = new UserModel();
-
-        Set<Role> roles = new HashSet<>();
-        Role role = roleRepository.findRoleByRoleEquals("USER");
-        roles.add(role);
-
         newUser.setUsername("");
-        newUser.setPassword(super.bCryptPasswordEncoder.encode("abc"));
+        newUser.setPassword("123456");
         newUser.setEmail("newUser@user.pl");
-        newUser.setRoles(roles);
 
         String requestJson = super.mapToJson(newUser);
         MvcResult mvcResult = performPost(uri, requestJson, UNLOGGED);
@@ -83,16 +75,9 @@ public class UsersControllerTest extends AbstractTest {
 
     @Test
     public void newUserExist() throws Exception {
-        Role userRole = new Role();
-        userRole.setId(2L);
-        userRole.setRole("USER");
-        Set<Role> roles = new HashSet<>();
-        roles.add(userRole);
-
         UserModel newUser = new UserModel();
         newUser.setUsername(super.userName);
-        newUser.setPassword(bCryptPasswordEncoder.encode(super.password));
-        newUser.setRoles(roles);
+        newUser.setPassword("123456");
         newUser.setEmail("blabla@blabla.com");
 
         String requestJson = super.mapToJson(newUser);
@@ -118,35 +103,28 @@ public class UsersControllerTest extends AbstractTest {
 
     @Test
     public void getMarkedQuestionsLogged() throws Exception{
-
         MvcResult mvcResult = performGet(uri + "/known_questions", USER);
 
         int status = mvcResult.getResponse().getStatus();
         assertEquals(200, status);
 
-
-
-        Collection<Question> knownQuestions = userRepository.getUserByUsername(super.userName).getKnownQuestions();
-        int questionsCount = knownQuestions.size();
-//        int questionsCount = 0; it works
-
-
         String responseString = mvcResult.getResponse().getContentAsString();
         Question[] questionsResponse = super.mapFromJson(responseString, Question[].class);
 
-        assertEquals(questionsCount, questionsResponse.length);
+        assertEquals(0, questionsResponse.length);
     }
 
     @Test
     public void markQuestion() throws Exception{;
-
         Question question = new Question();
-        question.setId((long) 1);
-        question.setTitle("uuu");
-        question.setQuestion("aaa");
-        questionRepository.save(question);
+        question.setId(666L);
+        question.setAccepted(true);
+        question.setQuestion("uuu");
+        question.setTitle("aaa");
+        String jsonPost = mapToJson(question);
+        performPost("/questions", jsonPost, USER);
 
-        MvcResult mvcResult = performGet(uri + "users/mark_question/1", USER);
+        MvcResult mvcResult = performGet(uri + "users/mark_question/666", USER);
 
         int status = mvcResult.getResponse().getStatus();
         assertEquals(200, status);
@@ -154,12 +132,19 @@ public class UsersControllerTest extends AbstractTest {
         String responseString = mvcResult.getResponse().getContentAsString();
         Question[] questionsResponse = super.mapFromJson(responseString, Question[].class);
         assertEquals("uuu", questionsResponse[0].getTitle());
-
     }
 
     @Test
     public void markQuestionNotLogged() throws Exception{
-        MvcResult mvcResult = performGet(uri + "users/mark_question/100", UNLOGGED);
+        Question question = new Question();
+        question.setId(666L);
+        question.setAccepted(true);
+        question.setQuestion("uuu");
+        question.setTitle("aaa");
+        String jsonPost = mapToJson(question);
+        performPost("/questions", jsonPost, USER);
+
+        MvcResult mvcResult = performGet(uri + "users/mark_question/666", UNLOGGED);
 
         int status = mvcResult.getResponse().getStatus();
         assertEquals(401, status);
@@ -178,6 +163,4 @@ public class UsersControllerTest extends AbstractTest {
         String responseString = mvcResult.getResponse().getContentAsString();
         assertEquals("", responseString);
     }
-
-
 }
