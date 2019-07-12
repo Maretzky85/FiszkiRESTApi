@@ -52,8 +52,6 @@ public class AnswerControllerTest extends AbstractTest {
 
             performPost("/questions/"+ i + "/answers", jsonPost, USER);
         }
-
-        answerRepository.findAll().forEach(answer -> System.out.println(answer.getId()));
     }
 
     @Test
