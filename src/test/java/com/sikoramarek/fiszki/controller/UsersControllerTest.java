@@ -5,8 +5,6 @@ import com.sikoramarek.fiszki.model.Question;
 import com.sikoramarek.fiszki.model.Role;
 import com.sikoramarek.fiszki.model.UserModel;
 import com.sikoramarek.fiszki.repository.QuestionRepository;
-import com.sikoramarek.fiszki.repository.RoleRepository;
-import com.sikoramarek.fiszki.repository.TagRepository;
 import com.sikoramarek.fiszki.repository.UserRepository;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
