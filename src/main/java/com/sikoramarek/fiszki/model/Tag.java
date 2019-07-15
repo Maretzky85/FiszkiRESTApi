@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -16,6 +17,7 @@ public class Tag {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	Long id;
 
+	@NotNull
 	@Column(name = "tag")
 	String tagName;
 

@@ -14,6 +14,8 @@ public interface UserRepository extends JpaRepository<UserModel, Long> {
 
 	UserModel getUserByUsername(String username);
 
+	boolean existsUserModelByUsername(String username);
+
 	@Transactional
 	@Query(nativeQuery = true, value = "SELECT id FROM users where name = ?1")
 	Long getId(String username);

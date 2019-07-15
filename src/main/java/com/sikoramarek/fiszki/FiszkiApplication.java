@@ -1,7 +1,7 @@
 package com.sikoramarek.fiszki;
 
-import com.sikoramarek.fiszki.service.audit.AuditorAwareImpl;
 import com.sikoramarek.fiszki.model.UserModel;
+import com.sikoramarek.fiszki.service.audit.AuditorAwareImpl;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -14,6 +14,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 @SpringBootApplication
 @EnableJpaAuditing(auditorAwareRef = "auditorAware")
 public class FiszkiApplication extends SpringBootServletInitializer {
+
+	public static void main(String[] args) {
+		SpringApplication.run(FiszkiApplication.class, args);
+	}
 
 	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
@@ -28,10 +32,6 @@ public class FiszkiApplication extends SpringBootServletInitializer {
 	@Bean
 	public AuditorAware<UserModel> auditorAware() {
 		return new AuditorAwareImpl();
-	}
-
-	public static void main(String[] args) {
-		SpringApplication.run(FiszkiApplication.class, args);
 	}
 
 }
