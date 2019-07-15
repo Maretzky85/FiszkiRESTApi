@@ -35,6 +35,9 @@ public class UsersController {
 
 	@GetMapping("users/known_questions")
 	public ResponseEntity<Collection<Question>> getKnownQuestions(Principal principal){
+		if (principal == null) {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		}
 		return questionService.getKnownQuestions(principal);
 	}
 

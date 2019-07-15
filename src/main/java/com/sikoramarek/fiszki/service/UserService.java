@@ -59,6 +59,9 @@ public class UserService {
 
 	public ResponseEntity<UserModel> saveNewUser(UserModel newUser) {
 		if (newUser != null) {
+			if (userRepository.existsUserModelByUsername(newUser.getUsername())){
+				return new ResponseEntity<>(HttpStatus.CONFLICT);
+			}
 			try {
 				newUser.setPassword(bCryptPasswordEncoder.encode(newUser.getPassword()));
 				Set<Role> roles = new HashSet<>();
@@ -70,7 +73,7 @@ public class UserService {
 				e.printStackTrace();
 				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 			}
-			return new ResponseEntity<>(newUser, HttpStatus.ACCEPTED);
+			return new ResponseEntity<>(newUser, HttpStatus.CREATED);
 		} else {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}

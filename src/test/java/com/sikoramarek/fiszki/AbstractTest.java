@@ -7,7 +7,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sikoramarek.fiszki.model.Role;
 import com.sikoramarek.fiszki.model.UserModel;
 import com.sikoramarek.fiszki.repository.*;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -48,7 +51,7 @@ public abstract class AbstractTest {
 
     private String USER_TOKEN;
     private String loginUri = "/login";
-    private String userName = "user";
+    protected String userName = "user";
     private String adminName = "admin";
     private String password = "123456";
     private String ADMIN_TOKEN;
@@ -82,9 +85,16 @@ public abstract class AbstractTest {
         ADMIN_TOKEN = getToken(adminName);
     }
 
-
     @Test
     public void contextLoads() {
+    }
+
+    @After
+    public void tearDown() {
+        questionRepository.deleteAll();
+        tagRepository.deleteAll();
+        answerRepository.deleteAll();
+//        userRepository.deleteAll();
     }
 
     protected String mapToJson(Object obj) throws JsonProcessingException {
@@ -191,6 +201,12 @@ public abstract class AbstractTest {
             default:
                 throw new RuntimeException("Unknown user type");
         }
+    }
+
+    public String createJsonUserFromModel(UserModel userModel) {
+        return  "{\"username\":\"" + userModel.getUsername() + "\"," +
+                " \"password\":\"" + userModel.getPassword() + "\"," +
+                " \"email\": \"" + userModel.getEmail() + "\"}";
     }
 
     private void initUsers() {

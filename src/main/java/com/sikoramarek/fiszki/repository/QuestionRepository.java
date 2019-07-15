@@ -18,7 +18,7 @@ import java.util.Optional;
 @Repository
 public interface QuestionRepository extends JpaRepository<Question, Long> {
 
-	Long countQuestionByTagsContaining(Tag tag);
+	Long countQuestionByTagsContainingAndAcceptedTrue(Tag tag);
 
 	Long countQuestionsByTagsContainingAndAcceptedTrueAndIdNotIn(Tag tag, Collection<Long> ids);
 

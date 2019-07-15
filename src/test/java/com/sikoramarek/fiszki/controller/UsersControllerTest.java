@@ -29,29 +29,21 @@ public class UsersControllerTest extends AbstractTest {
     @Test
     public void newUser() throws Exception {
         UserModel newUser = new UserModel();
-
-        Set<Role> roles = new HashSet<>();
-        Role userRole = new Role();
-        userRole.setId(2L);
-        userRole.setRole("USER");
-        roles.add(userRole);
-
         newUser.setUsername("newUser");
         newUser.setPassword("123456");
         newUser.setEmail("newUser@user.pl");
-        newUser.setRoles(roles);
 
-        String requestJson = super.mapToJson(newUser);
+        String requestJson = createJsonUserFromModel(newUser);
         MvcResult mvcResult = performPost(uri, requestJson, UNLOGGED);
 
         int status = mvcResult.getResponse().getStatus();
         assertEquals(201, status);
 
         String responseString = mvcResult.getResponse().getContentAsString();
-        UserModel[] userModelResponse = super.mapFromJson(responseString, UserModel[].class);
-        assertNotNull( userModelResponse[0].getId());
-        assertEquals("newUser", userModelResponse[0].getUsername());
-        assertEquals("newUser@user.pl", userModelResponse[0].getEmail());
+        UserModel userModelResponse = super.mapFromJson(responseString, UserModel.class);
+        assertNotNull( userModelResponse.getId());
+        assertEquals("newUser", userModelResponse.getUsername());
+        assertEquals("newUser@user.pl", userModelResponse.getEmail());
     }
 
     @Test
@@ -78,7 +70,7 @@ public class UsersControllerTest extends AbstractTest {
         newUser.setPassword("123456");
         newUser.setEmail("blabla@blabla.com");
 
-        String requestJson = super.mapToJson(newUser);
+        String requestJson = createJsonUserFromModel(newUser);
         MvcResult mvcResult = performPost(uri, requestJson, UNLOGGED);
 
         int status = mvcResult.getResponse().getStatus();
@@ -115,14 +107,15 @@ public class UsersControllerTest extends AbstractTest {
     @Test
     public void markQuestion() throws Exception {
         Question question = new Question();
-        question.setId(666L);
+//        question.setId(666L);
         question.setAccepted(true);
         question.setQuestion("uuu");
         question.setTitle("aaa");
         String jsonPost = mapToJson(question);
-        performPost("/questions", jsonPost, USER);
+        MvcResult postResult = performPost("/questions", jsonPost, USER);
+        Long newQuestionId = mapFromJson(postResult.getResponse().getContentAsString(), Question.class).getId();
 
-        MvcResult mvcResult = performGet(uri + "users/mark_question/666", USER);
+        MvcResult mvcResult = performPost(uri + "/mark_question/"+newQuestionId, jsonPost ,USER);
 
         int status = mvcResult.getResponse().getStatus();
         assertEquals(200, status);
@@ -141,7 +134,7 @@ public class UsersControllerTest extends AbstractTest {
         String jsonPost = mapToJson(question);
         performPost("/questions", jsonPost, USER);
 
-        MvcResult mvcResult = performGet(uri + "users/mark_question/666", UNLOGGED);
+        MvcResult mvcResult = performPost(uri + "/mark_question/666","",  UNLOGGED);
 
         int status = mvcResult.getResponse().getStatus();
         assertEquals(401, status);
@@ -152,7 +145,7 @@ public class UsersControllerTest extends AbstractTest {
 
     @Test
     public void markQuestionNonExisting() throws Exception{
-        MvcResult mvcResult = performGet(uri + "users/mark_question/100", USER);
+        MvcResult mvcResult = performPost(uri + "/mark_question/100", "" , USER);
 
         int status = mvcResult.getResponse().getStatus();
         assertEquals(404, status);

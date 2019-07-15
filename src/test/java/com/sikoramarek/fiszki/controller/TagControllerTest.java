@@ -12,8 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static com.sikoramarek.fiszki.UserType.UNLOGGED;
 import static com.sikoramarek.fiszki.UserType.USER;
@@ -30,6 +29,7 @@ public class TagControllerTest extends AbstractTest {
 
 	@Before
 	public void before() {
+		tagRepository.deleteAll();
 		Tag[] tags = new Tag[3];
 		for (int i = 0; i < tags.length; i++) {
 			Tag tag = new Tag();
@@ -57,7 +57,9 @@ public class TagControllerTest extends AbstractTest {
 
 	@Test
 	public void getTagByExistingIdExpectedSingletonList() throws Exception {
-		MvcResult mvcResult = performGet(uri + "/1", UNLOGGED);
+		Long tagId = tagRepository.findAll().get(0).getId();
+
+		MvcResult mvcResult = performGet(uri + "/"+tagId, UNLOGGED);
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(200, status);
@@ -66,8 +68,8 @@ public class TagControllerTest extends AbstractTest {
 		Tag[] tag = super.mapFromJson(content, Tag[].class);
 
 		assertEquals(1, tag.length);
-		assertEquals("test1", tag[0].getTagName());
-		assertEquals(1L, (long) tag[0].getId());
+		assertNotNull(tag[0].getTagName());
+		assertEquals(tagId, tag[0].getId());
 	}
 
 
@@ -85,15 +87,23 @@ public class TagControllerTest extends AbstractTest {
 
 	@Test
 	public void getQuestionsByExistingTagIdExpectsListOfQuestions() throws Exception {
-		MvcResult mvcResult = performGet(uri + "/1/questions", UNLOGGED);
+		Tag tag = tagRepository.findAll().get(0);
+		Question question = new Question();
+		question.setAccepted(true);
+		question.setTitle("testQuestion");
+		question.setQuestion("TestQuestion");
+		question.setTags(Collections.singleton(tag));
+		performPost("/questions", mapToJson(question), USER);
+
+		MvcResult mvcResult = performGet(uri + "/"+tag.getId()+"/questions", UNLOGGED);
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(200, status);
 
 
 		String content = mvcResult.getResponse().getContentAsString();
-		Long questionsCount = questionRepository.countQuestionByTagsContaining(
-				tagRepository.getOne(0L)
+		Long questionsCount = questionRepository.countQuestionByTagsContainingAndAcceptedTrue(
+				tagRepository.getOne(tag.getId())
 		);
 
 		Question[] questions = super.mapFromJson(content, Question[].class);
@@ -179,12 +189,11 @@ public class TagControllerTest extends AbstractTest {
 
 	@Test
 	public void editTagLoggedValidTagReturns200() throws Exception {
-		Tag tag = new Tag();
-		tag.setId(3L);
+		Tag tag = tagRepository.findAll().get(0);
 		tag.setTagName("JavaSecond");
 		String requestJson = super.mapToJson(tag);
 
-		MvcResult mvcResult = performPut(uri + "/3", requestJson, USER);
+		MvcResult mvcResult = performPut(uri + "/" + tag.getId(), requestJson, USER);
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(200, status);
@@ -194,7 +203,7 @@ public class TagControllerTest extends AbstractTest {
 		Tag[] tagResponse = mapFromJson(responseString, Tag[].class);
 		assertEquals(1, tagResponse.length);
 		assertEquals("JavaSecond", tagResponse[0].getTagName());
-		assertEquals(3L, (long) tagResponse[0].getId());
+		assertEquals(tag.getId(), tagResponse[0].getId());
 
 	}
 
@@ -277,7 +286,10 @@ public class TagControllerTest extends AbstractTest {
 
 	@Test
 	public void deleteTagLoggedReturns200() throws Exception {
-		MvcResult mvcResult = performDelete(uri + "/2", USER);
+		List<Tag> tags = tagRepository.findAll();
+		Long tagId = tags.get(0).getId();
+
+		MvcResult mvcResult = performDelete(uri + "/" + tagId, USER);
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(200, status);
@@ -299,25 +311,19 @@ public class TagControllerTest extends AbstractTest {
 
 	@Test
 	public void getRandomNotLoggedTagExistsReturn200() throws Exception {
+		Tag tag = tagRepository.findAll().get(0);
+
 		for (int i = 0; i < 3; i++) {
 			Question question = new Question();
 			question.setAccepted(true);
 			question.setQuestion("test"+i);
 			question.setTitle("test"+i);
-			Set<Tag> tags = new HashSet<>();
-			Tag tag = new Tag();
-			tag.setId(1L);
-			tag.setTagName("test1");
-			tags.add(tag);
-			question.setTags(tags);
+			question.setTags(Collections.singleton(tag));
 			String jsonPost = mapToJson(question);
 			performPost("/questions", jsonPost, USER);
-//			question.setUser("user");
-//			questionRepository.save(question);
-
 		}
 
-		MvcResult mvcResult = performGet(uri + "/1/questions/random", UNLOGGED);
+		MvcResult mvcResult = performGet(uri + "/"+tag.getId()+"/questions/random", UNLOGGED);
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(200, status);
@@ -344,7 +350,10 @@ public class TagControllerTest extends AbstractTest {
 
 	@Test
 	public void getRandomNotLoggedTagExistsNoQuestionsExistsReturn200() throws Exception {
-		MvcResult mvcResult = performGet(uri + "/1/questions/random", UNLOGGED);
+		Long tagId = tagRepository.findAll().get(0).getId();
+
+		MvcResult mvcResult = performGet(uri + "/"+tagId+"/questions/random", UNLOGGED);
+
 
 		int status = mvcResult.getResponse().getStatus();
 		assertEquals(200, status);

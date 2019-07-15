@@ -110,7 +110,7 @@ public class TagService {
 			questionPage = questionRepository.findQuestionsByIdNotInAndAcceptedTrueAndTagsContaining(
 					getCurrentUserKnownQuestionIds(), tag, PageRequest.of(index, 1, Sort.unsorted()));
 		} else {
-			Long quantity = questionRepository.countQuestionByTagsContaining(tag);
+			Long quantity = questionRepository.countQuestionByTagsContainingAndAcceptedTrue(tag);
 			int index = (int) (Math.random() * quantity);
 			questionPage = questionRepository
 					.findAllByTagsContainingAndAcceptedTrue(tag, PageRequest.of(index, 1, Sort.unsorted()));
