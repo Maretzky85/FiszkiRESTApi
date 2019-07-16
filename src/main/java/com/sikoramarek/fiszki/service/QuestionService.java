@@ -40,7 +40,6 @@ public class QuestionService {
 		this.answersRepository = answersRepository;
 		this.tagRepository = tagRepository;
 		this.userRepository = userRepository;
-
 	}
 
 	private boolean checkForAdmin() {
@@ -50,13 +49,6 @@ public class QuestionService {
 		} else {
 			return false;
 		}
-	}
-
-	public Page<Question> getAllQuestions() {
-		if (checkForAdmin()) {
-			return questionsRepository.findAll(PageRequest.of(0, 10));
-		}
-		return questionsRepository.findAllByAcceptedTrue(PageRequest.of(0, 10));
 	}
 
 	public Page<Question> getPageableQuestions(int page, int size) {
@@ -92,30 +84,48 @@ public class QuestionService {
 		return new ResponseEntity<>(question, HttpStatus.OK);
 	}
 
-	public ResponseEntity<Question> editQuestion(Question question, Long question_id) {
-		if (questionsRepository.existsById(question.getId())) {
-			for (Tag tag : question.getTags()
-			) {
-				if (!tagRepository.existsById(tag.getId())) {
-					return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-				}
-			}
-			questionsRepository.save(question);
-			return new ResponseEntity<>(question, HttpStatus.OK);
-		} else {
-			return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
+	public ResponseEntity<Question> editQuestion(Question newQuestion, Long question_id, Principal principal) {
+		if (principal == null) {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}
-	}
-
-	public ResponseEntity<Question> deleteQuestion(Long question_id) {
-		Optional<Question> optionalQuestion = questionsRepository.findQuestionById(question_id);
-		if (optionalQuestion.isPresent()) {
-			Question question = optionalQuestion.get();
-			questionsRepository.delete(question);
-			return new ResponseEntity<>(question, HttpStatus.OK);
-		} else {
+		Optional<Question> optionalQuestion = questionsRepository.findById(question_id);
+		if (!optionalQuestion.isPresent()) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+		Question question = optionalQuestion.get();
+		if (!principal.getName().equals(question.getUser())) {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		}
+		for (Tag tag : newQuestion.getTags()) {
+			if (!tagRepository.existsById(tag.getId())) {
+				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			}
+		}
+		question.setTags(newQuestion.getTags());
+		question.setTitle(newQuestion.getTitle());
+		question.setQuestion(newQuestion.getQuestion());
+		try {
+			questionsRepository.save(question);
+		} catch (DataAccessException | ConstraintViolationException e) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
+		return new ResponseEntity<>(question, HttpStatus.OK);
+	}
+
+	public ResponseEntity<Question> deleteQuestion(Long question_id, Principal principal) {
+		if (principal == null) {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		}
+		Optional<Question> optionalQuestion = questionsRepository.findById(question_id);
+		if (!optionalQuestion.isPresent()) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+		Question question = optionalQuestion.get();
+		if (!principal.getName().equals(question.getUser())) {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		}
+		questionsRepository.delete(question);
+		return new ResponseEntity<>(question, HttpStatus.OK);
 	}
 
 	public ResponseEntity<List<Question>> getRandom(Principal principal) {
@@ -140,17 +150,11 @@ public class QuestionService {
 		return new ResponseEntity<>(Collections.emptyList(), HttpStatus.OK);
 	}
 
-	public ResponseEntity<Page<Question>> getUnaccepted(int page, int size) {
-		Page<Question> questionList = questionsRepository.getQuestionsByAcceptedFalse(PageRequest.of(page, size));
-		return new ResponseEntity<>(questionList, HttpStatus.OK);
-	}
-
 	private Collection<Long> getCurrentUserKnownQuestionIds() {
 		String userName = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		Collection<Question> knownQuestions = userRepository.getUserByUsername(userName).getKnownQuestions();
 		return knownQuestions.stream().map(Question::getId).collect(Collectors.toList());
 	}
-
 
 	public ResponseEntity markQuestionAsKnown(Principal principal, Long question_id) {
 		if (principal != null) {
@@ -173,7 +177,6 @@ public class QuestionService {
 		} else {
 			return new ResponseEntity(HttpStatus.UNAUTHORIZED);
 		}
-
 	}
 
 	public ResponseEntity<Collection<Question>> getKnownQuestions(Principal principal) {

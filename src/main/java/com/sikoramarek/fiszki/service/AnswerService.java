@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -27,31 +28,25 @@ public class AnswerService {
 		this.questionRepository = questionRepository;
 	}
 
-	public ResponseEntity<List<Answer>> getAllAnswers() {
-		return new ResponseEntity<>(answerRepository.findAll(), HttpStatus.OK);
-	}
-
-	public ResponseEntity<List<Answer>> getAnswerById(Long answerId) {
-		Optional<Answer> optionalAnswer = answerRepository.findById(answerId);
-		return optionalAnswer.map(
-				answer ->
-						new ResponseEntity<>(
-								Collections.singletonList(answer),
-								HttpStatus.OK))
-				.orElseGet(() ->
-						new ResponseEntity<>(HttpStatus.NOT_FOUND));
-	}
-
-	public ResponseEntity<Answer> editAnswerById(Answer answer, Long answer_id) {
+	public ResponseEntity<Answer> editAnswerById(Answer newAnswer, Long answer_id, Principal principal) {
+		if (principal == null) {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		}
 		Optional<Answer> optionalAnswer = answerRepository.findById(answer_id);
-		if (optionalAnswer.isPresent()) {
-			Answer editedAnswer = optionalAnswer.get();
-			editedAnswer.setAnswer(answer.getAnswer());
-			answerRepository.save(editedAnswer);
-			return new ResponseEntity<>(editedAnswer, HttpStatus.OK);
-		} else {
+		if (!optionalAnswer.isPresent()) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
+		Answer answer = optionalAnswer.get();
+		if (!principal.getName().equals(answer.getUser())) {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		}
+		answer.setAnswer(newAnswer.getAnswer());
+		try {
+			answerRepository.save(answer);
+		} catch (DataAccessException | javax.validation.ConstraintViolationException e) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+		return new ResponseEntity<>(answer, HttpStatus.OK);
 	}
 
 	public ResponseEntity<List<Answer>> getAnswersByQuestionId(Long questionId) {
@@ -69,17 +64,19 @@ public class AnswerService {
 		}
 	}
 
-	public ResponseEntity<Answer> deleteAnswer(Long answer_id) {
+	public ResponseEntity<Answer> deleteAnswer(Long answer_id, Principal principal) {
+		if (principal == null) {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		}
 		Optional<Answer> optionalAnswer = answerRepository.findById(answer_id);
-		if (optionalAnswer.isPresent()) {
-			Answer answer = optionalAnswer.get();
-			answerRepository.delete(answer);
-			return new ResponseEntity<>(answer, HttpStatus.OK);
-		} else {
+		if (!optionalAnswer.isPresent()) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
-
+		Answer answer = optionalAnswer.get();
+		if (!principal.getName().equals(answer.getUser())) {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		}
+		answerRepository.delete(answer);
+		return new ResponseEntity<>(answer, HttpStatus.OK);
 	}
-
-
 }
