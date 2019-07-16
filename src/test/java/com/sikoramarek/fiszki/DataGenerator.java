@@ -1,5 +1,6 @@
 package com.sikoramarek.fiszki;
 
+import com.sikoramarek.fiszki.model.Answer;
 import com.sikoramarek.fiszki.model.Question;
 import com.sikoramarek.fiszki.model.Tag;
 
@@ -19,6 +20,18 @@ public class DataGenerator {
             tags.add(tag);
         }
         return tags;
+    }
+
+    public List<Answer> generateAnswers(List<Question> questions) {
+        List<Answer> answers = new ArrayList<>();
+        questions.forEach(question -> {
+                    Answer answer = new Answer();
+                    answer.setAnswer("Answer " + Math.random());
+                    answer.setQuestion(question);
+                    answers.add(answer);
+                }
+        );
+        return answers;
     }
 
     public List<Question> generateQuestions(Set<Tag> tags) {
