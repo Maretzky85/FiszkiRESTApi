@@ -127,9 +127,9 @@ public class QuestionControllerTest extends AbstractTest {
     }
 
     @Test
-    public void deleteQuestionExpects400() throws Exception {
-        assertEquals(400, deleteQuestionStatus(1111111111, 0, USER));
-        assertEquals(400, deleteQuestionStatus(1111111111, 0, ADMIN));
+    public void deleteQuestionExpects404() throws Exception {
+        assertEquals(404, deleteQuestionStatus(1111111111, 0, USER));
+        assertEquals(404, deleteQuestionStatus(1111111111, 0, ADMIN));
     }
 
     private int deleteQuestionStatus(int questionId, int countModifier, UserType userType) throws Exception {
