@@ -93,7 +93,7 @@ public class QuestionService {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 		Question question = optionalQuestion.get();
-		if (!principal.getName().equals(question.getUser())) {
+		if (!(principal.getName().equals(question.getUser()) || checkForAdmin())) {
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}
 		for (Tag tag : newQuestion.getTags()) {
@@ -121,7 +121,7 @@ public class QuestionService {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 		Question question = optionalQuestion.get();
-		if (!principal.getName().equals(question.getUser())) {
+		if (!(principal.getName().equals(question.getUser()) || checkForAdmin())) {
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}
 		questionsRepository.delete(question);

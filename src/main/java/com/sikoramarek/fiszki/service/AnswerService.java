@@ -8,9 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -37,7 +40,7 @@ public class AnswerService {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 		Answer answer = optionalAnswer.get();
-		if (!principal.getName().equals(answer.getUser())) {
+		if (!(principal.getName().equals(answer.getUser()) || checkForAdmin())) {
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}
 		answer.setAnswer(newAnswer.getAnswer());
@@ -73,10 +76,19 @@ public class AnswerService {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 		Answer answer = optionalAnswer.get();
-		if (!principal.getName().equals(answer.getUser())) {
+		if (!(principal.getName().equals(answer.getUser()) || checkForAdmin())) {
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}
 		answerRepository.delete(answer);
 		return new ResponseEntity<>(answer, HttpStatus.OK);
+	}
+
+	private boolean checkForAdmin() {
+		Collection<? extends GrantedAuthority> authority = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+		if (authority.stream().anyMatch(o -> o.getAuthority().equals("ROLE_ADMIN"))) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }
