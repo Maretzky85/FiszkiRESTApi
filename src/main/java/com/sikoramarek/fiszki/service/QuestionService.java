@@ -177,6 +177,9 @@ public class QuestionService {
 	}
 
 	public ResponseEntity<Collection<Question>> getKnownQuestions(Principal principal) {
+		if (principal == null) {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		}
 		Long userId = userRepository.getId(principal.getName());
 		Collection<Question> knownQuestions =
 				questionsRepository
