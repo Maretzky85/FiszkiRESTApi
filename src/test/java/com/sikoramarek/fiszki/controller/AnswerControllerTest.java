@@ -5,14 +5,11 @@ import com.sikoramarek.fiszki.UserType;
 import com.sikoramarek.fiszki.model.Answer;
 import com.sikoramarek.fiszki.model.Question;
 import com.sikoramarek.fiszki.model.Tag;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 import static com.sikoramarek.fiszki.UserType.USER;
 import static org.junit.Assert.assertEquals;

@@ -7,7 +7,8 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
         AnswerControllerTest.class,
         TagControllerTest.class,
-        UsersControllerTest.class
+        UsersControllerTest.class,
+		QuestionControllerTest.class
 })
 
 public class ControllersTest {

@@ -1,6 +1,8 @@
 package com.sikoramarek.fiszki.controller;
 
+import com.sikoramarek.fiszki.model.Answer;
 import com.sikoramarek.fiszki.model.Question;
+import com.sikoramarek.fiszki.service.AnswerService;
 import com.sikoramarek.fiszki.service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -14,16 +16,14 @@ import java.util.List;
 public class QuestionController{
 
 	private QuestionService questionService;
+	private AnswerService answerService;
 
 	@Autowired
-	public QuestionController(QuestionService questionService) {
+	public QuestionController(QuestionService questionService, AnswerService answerService) {
 		this.questionService = questionService;
+		this.answerService = answerService;
 	}
 
-	@GetMapping("questions")
-	public Page<Question> getAllQuestions() {
-		return questionService.getAllQuestions();
-	}
 
 	@GetMapping(value = "questions", params = {"page", "size"})
 	public Page<Question> getPageableQuestions(@RequestParam("page") int page, @RequestParam("size") int size) {
@@ -42,13 +42,15 @@ public class QuestionController{
 
 	@PutMapping("questions/{questionId}")
 	public ResponseEntity<Question> editQuestion(@RequestBody Question question,
-	                                             @PathVariable("questionId") Long questionId) {
-		return questionService.editQuestion(question, questionId);
+	                                             @PathVariable("questionId") Long questionId,
+												 Principal principal) {
+		return questionService.editQuestion(question, questionId, principal);
 	}
 
 	@DeleteMapping("questions/{questionId}")
-	public ResponseEntity<Question> deleteQuestion(@PathVariable("questionId") Long questionId) {
-		return questionService.deleteQuestion(questionId);
+	public ResponseEntity<Question> deleteQuestion(@PathVariable("questionId") Long questionId,
+												   Principal principal) {
+		return questionService.deleteQuestion(questionId, principal);
 	}
 
 	@GetMapping("questions/random")
@@ -56,6 +58,14 @@ public class QuestionController{
 		return questionService.getRandom(principal);
 	}
 
-	@GetMapping("questions/admin")
-	public ResponseEntity<Page<Question>> getUnaccepted() {return questionService.getUnaccepted(0, 10); }
+	@GetMapping("questions/{question_id}/answers")
+	public ResponseEntity<List<Answer>> getAnswersByQuestionId(@PathVariable("question_id") Long questionId) {
+		return answerService.getAnswersByQuestionId(questionId);
+	}
+
+	@PostMapping("questions/{question_id}/answers")
+	public ResponseEntity<Answer> newAnswer(@RequestBody Answer answer,
+											@PathVariable("question_id") Long question_id) {
+		return answerService.newAnswer(answer, question_id);
+	}
 }
