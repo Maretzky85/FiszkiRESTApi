@@ -2,6 +2,7 @@ package com.sikoramarek.fiszki.controller;
 
 import com.sikoramarek.fiszki.model.Question;
 import com.sikoramarek.fiszki.model.Tag;
+import com.sikoramarek.fiszki.service.QuestionService;
 import com.sikoramarek.fiszki.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,11 +16,13 @@ import java.util.List;
 public class TagController {
 
 	private TagService tagService;
+	private QuestionService questionService;
 
 	@Autowired
 	public TagController(
-			TagService tagService) {
+			TagService tagService, QuestionService questionService) {
 		this.tagService = tagService;
+		this.questionService = questionService;
 	}
 
 
@@ -37,7 +40,7 @@ public class TagController {
 
 	@GetMapping("tags/{tagId}/questions")
 	public ResponseEntity<Collection<Question>> getQuestionsByTagId(@PathVariable("tagId") Long tagId) {
-		return tagService.getQuestionsByTagId(tagId);
+		return questionService.getQuestionsByTagId(tagId);
 	}
 
 	@PostMapping("tags")
@@ -57,6 +60,6 @@ public class TagController {
 
 	@GetMapping("tags/{tagId}/questions/random")
 	public ResponseEntity<List<Question>> getRandom(Principal principal, @PathVariable("tagId") Long tagId) {
-		return tagService.getRandomByTag(principal, tagId);
+		return questionService.getRandomByTag(principal, tagId);
 	}
 }

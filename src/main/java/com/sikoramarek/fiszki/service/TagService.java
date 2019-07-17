@@ -21,14 +21,11 @@ import java.util.stream.Collectors;
 public class TagService {
 
 	private TagRepository tagRepository;
-	private QuestionRepository questionRepository;
 	private UserRepository userRepository;
 
 	public TagService(TagRepository tagRepository,
-	                  QuestionRepository questionRepository,
 	                  UserRepository userRepository) {
 		this.tagRepository = tagRepository;
-		this.questionRepository = questionRepository;
 		this.userRepository = userRepository;
 	}
 
@@ -53,16 +50,6 @@ public class TagService {
 		} else {
 			tagRepository.save(tag);
 			return new ResponseEntity<>(Collections.singleton(tag), HttpStatus.CREATED);
-		}
-	}
-
-	public ResponseEntity<Collection<Question>> getQuestionsByTagId(Long tagId) {
-		Optional<Tag> optionalTag = tagRepository.findById(tagId);
-		if (optionalTag.isPresent()) {
-			List<Question> questionList = questionRepository.findQuestionsByTagsContaining(optionalTag.get());
-			return new ResponseEntity<>(questionList, HttpStatus.OK);
-		} else {
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 	}
 
@@ -91,35 +78,6 @@ public class TagService {
 		} catch (Exception e) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
-	}
-
-	public ResponseEntity<List<Question>> getRandomByTag(Principal principal, Long tag_id) {
-		Page<Question> questionPage;
-		Tag tag;
-		Optional<Tag> optionalTag = tagRepository.findById(tag_id);
-		if (optionalTag.isPresent()) {
-			tag = optionalTag.get();
-		} else {
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}
-		if (principal != null && getCurrentUserKnownQuestionIds().size() > 0) {
-			Long quantity = questionRepository
-					.countQuestionsByTagsContainingAndAcceptedTrueAndIdNotIn(
-							tag, getCurrentUserKnownQuestionIds());
-			int index = (int) (Math.random() * quantity);
-			questionPage = questionRepository.findQuestionsByIdNotInAndAcceptedTrueAndTagsContaining(
-					getCurrentUserKnownQuestionIds(), tag, PageRequest.of(index, 1, Sort.unsorted()));
-		} else {
-			Long quantity = questionRepository.countQuestionByTagsContainingAndAcceptedTrue(tag);
-			int index = (int) (Math.random() * quantity);
-			questionPage = questionRepository
-					.findAllByTagsContainingAndAcceptedTrue(tag, PageRequest.of(index, 1, Sort.unsorted()));
-		}
-
-		if (questionPage.hasContent()) {
-			return new ResponseEntity<>(Collections.singletonList(questionPage.getContent().get(0)), HttpStatus.OK);
-		}
-		return new ResponseEntity<>(new ArrayList<>(), HttpStatus.OK);
 	}
 
 	private Collection<Long> getCurrentUserKnownQuestionIds() {
