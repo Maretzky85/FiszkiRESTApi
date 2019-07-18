@@ -2,24 +2,27 @@ package com.sikoramarek.fiszki.controller;
 
 import com.sikoramarek.fiszki.model.Question;
 import com.sikoramarek.fiszki.repository.QuestionRepository;
+import com.sikoramarek.fiszki.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.Collection;
 
 @RestController
 public class AdminController {
 
 	private QuestionRepository questionRepository;
+	private UserService userService;
 
 	@Autowired
-	public AdminController(QuestionRepository questionRepository){
+	public AdminController(QuestionRepository questionRepository, UserService userService){
 		this.questionRepository = questionRepository;
+		this.userService = userService;
 	}
 
 	@PostMapping("admin/accept/{questionId}")
@@ -34,4 +37,8 @@ public class AdminController {
 		}
 	}
 
+	@GetMapping("admin/users")
+	public ResponseEntity<Collection> getUsers() {
+		return userService.getAllUsers();
+	}
 }
