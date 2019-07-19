@@ -51,6 +51,15 @@ public class QuestionService {
 		}
 	}
 
+	public ResponseEntity<Collection> getUserQuestions(String userName){
+		if (checkForAdmin()) {
+			Collection<Question> questions = questionRepository.findQuestionsByUserName(userName);
+			return new ResponseEntity<>(questions, HttpStatus.OK);
+		} else {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		}
+	}
+
 	public Page<Question> getPageableQuestions(int page, int size) {
 		if (checkForAdmin()) {
 			return questionRepository.findAll(PageRequest.of(page, size));

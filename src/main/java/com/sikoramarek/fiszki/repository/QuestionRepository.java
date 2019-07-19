@@ -58,4 +58,7 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 	@Modifying
 	@Query(nativeQuery = true, value = "UPDATE questions q SET accepted = TRUE where q.id = ?1")
 	void setAccepted(Long questionID);
+
+	@Query(value = "SELECT * FROM questions q WHERE q.user_id = ?1", nativeQuery = true)
+	List<Question> findQuestionsByUserName(String userName);
 }
