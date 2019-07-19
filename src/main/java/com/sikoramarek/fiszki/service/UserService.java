@@ -10,14 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class UserService {
@@ -36,13 +35,13 @@ public class UserService {
 		this.roleRepository = roleRepository;
 	}
 
-	public ResponseEntity<List<UserModel>> getAllUsers() {
-		List<UserModel> users = userRepository.findAll();
-		if (!users.isEmpty()) {
-			users.forEach(userModel -> userModel.setPassword(null));
+	public ResponseEntity<Collection> getAllUsers() {
+		if (checkForAdmin()) {
+			Collection<UserModel> users = userRepository.findAll();
+			if (!users.isEmpty()) { users.forEach(userModel -> userModel.setPassword(null)); }
 			return new ResponseEntity<>(users, HttpStatus.OK);
 		} else {
-			return new ResponseEntity<>(HttpStatus.OK);
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}
 	}
 
@@ -79,4 +78,12 @@ public class UserService {
 		}
 	}
 
+	private boolean checkForAdmin() {
+		Collection<? extends GrantedAuthority> authority = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+		if (authority.stream().anyMatch(o -> o.getAuthority().equals("ROLE_ADMIN"))) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 }
