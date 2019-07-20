@@ -1,6 +1,7 @@
 package com.sikoramarek.fiszki.service;
 
 import com.sikoramarek.fiszki.model.Answer;
+import com.sikoramarek.fiszki.model.projections.AnswerOnly;
 import com.sikoramarek.fiszki.repository.AnswerRepository;
 import com.sikoramarek.fiszki.repository.QuestionRepository;
 import org.hibernate.exception.ConstraintViolationException;
@@ -30,9 +31,9 @@ public class AnswerService {
 		this.questionRepository = questionRepository;
 	}
 
-	public ResponseEntity<Collection> getUserAnswers(String userName){
+	public ResponseEntity<Collection<AnswerOnly>> getUserAnswers(String userName){
 		if (checkForAdmin()) {
-			Collection<Answer> answers = answerRepository.findAnswersByUserName(userName);
+			Collection<AnswerOnly> answers = answerRepository.findAnswersByUser(userName);
 			return new ResponseEntity<>(answers, HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);

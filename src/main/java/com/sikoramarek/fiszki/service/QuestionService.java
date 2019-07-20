@@ -4,10 +4,8 @@ import com.sikoramarek.fiszki.model.Answer;
 import com.sikoramarek.fiszki.model.Question;
 import com.sikoramarek.fiszki.model.Tag;
 import com.sikoramarek.fiszki.model.UserModel;
-import com.sikoramarek.fiszki.repository.AnswerRepository;
-import com.sikoramarek.fiszki.repository.QuestionRepository;
-import com.sikoramarek.fiszki.repository.TagRepository;
-import com.sikoramarek.fiszki.repository.UserRepository;
+import com.sikoramarek.fiszki.model.projections.QuestionOnly;
+import com.sikoramarek.fiszki.repository.*;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -51,9 +49,9 @@ public class QuestionService {
 		}
 	}
 
-	public ResponseEntity<Collection> getUserQuestions(String userName){
+	public ResponseEntity<Collection<QuestionOnly>> getUserQuestions(String userName){
 		if (checkForAdmin()) {
-			Collection<Question> questions = questionRepository.findQuestionsByUserName(userName);
+			Collection<QuestionOnly> questions = questionRepository.findQuestionsByUser(userName);
 			return new ResponseEntity<>(questions, HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);

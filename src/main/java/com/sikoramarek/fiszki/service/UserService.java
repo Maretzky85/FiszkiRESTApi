@@ -35,7 +35,7 @@ public class UserService {
 		this.roleRepository = roleRepository;
 	}
 
-	public ResponseEntity<Collection> getAllUsers() {
+	public ResponseEntity<Collection<UserModel>> getAllUsers() {
 		if (checkForAdmin()) {
 			Collection<UserModel> users = userRepository.findAll();
 			if (!users.isEmpty()) { users.forEach(userModel -> userModel.setPassword(null)); }
