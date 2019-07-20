@@ -73,8 +73,10 @@ public class AnswerControllerTest extends AbstractTest {
 
     @Test
     public void editAnswerExpects400() throws Exception {
-        assertEquals(400, editAnswerStatus(6L, UserType.USER, ":user"));
-        assertEquals(400, editAnswerStatus(7L, UserType.ADMIN, ":user"));
+        Long answer1Id = answerRepository.findAll().get(0).getId();
+        Long answer2Id = answerRepository.findAll().get(1).getId();
+        assertEquals(400, editAnswerStatus(answer1Id, UserType.USER, ":user"));
+        assertEquals(400, editAnswerStatus(answer2Id, UserType.ADMIN, ":user"));
     }
 
     @Test

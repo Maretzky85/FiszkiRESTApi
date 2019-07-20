@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,6 +28,15 @@ public class AnswerService {
 	                     QuestionRepository questionRepository) {
 		this.answerRepository = answerRepository;
 		this.questionRepository = questionRepository;
+	}
+
+	public ResponseEntity<Collection> getUserAnswers(String userName){
+		if (checkForAdmin()) {
+			Collection<Answer> answers = answerRepository.findAnswersByUserName(userName);
+			return new ResponseEntity<>(answers, HttpStatus.OK);
+		} else {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		}
 	}
 
 	public ResponseEntity<Answer> editAnswerById(Answer newAnswer, Long answer_id, Principal principal) {
