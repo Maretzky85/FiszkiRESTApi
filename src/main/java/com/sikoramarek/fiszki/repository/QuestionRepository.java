@@ -4,6 +4,7 @@ import com.sikoramarek.fiszki.model.Question;
 import com.sikoramarek.fiszki.model.Tag;
 import com.sikoramarek.fiszki.model.UserModel;
 import com.sikoramarek.fiszki.model.projections.QuestionOnly;
+import com.sikoramarek.fiszki.model.projections.QuestionOnly;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -42,6 +43,7 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 
 	Optional<Question> findQuestionById(Long questionID);
 
+	@Transactional
 	@Query(nativeQuery = true, value =
 			"select q.user_id, question_id, id, title, question, accepted " +
 					"from user_known_question " +

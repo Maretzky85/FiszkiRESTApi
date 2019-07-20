@@ -13,6 +13,8 @@ import com.sikoramarek.fiszki.repository.AnswerRepository;
 import com.sikoramarek.fiszki.repository.QuestionRepository;
 import com.sikoramarek.fiszki.repository.TagRepository;
 import com.sikoramarek.fiszki.repository.UserRepository;
+import com.sikoramarek.fiszki.model.projections.QuestionOnly;
+import com.sikoramarek.fiszki.repository.*;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
