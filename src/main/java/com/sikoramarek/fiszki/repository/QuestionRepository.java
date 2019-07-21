@@ -35,7 +35,7 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 
 	Page<Question> findAll(Pageable pageable);
 
-	Page<Question> findAllByAcceptedTrue(Pageable pageable);
+	Page<Question> findQuestionsByAcceptedTrue(Pageable pageable);
 
 	Page<Question> findAllByTagsContainingAndAcceptedTrue(Tag tag, Pageable pageable);
 

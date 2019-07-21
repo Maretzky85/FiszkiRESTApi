@@ -1,25 +1,32 @@
 package com.sikoramarek.fiszki.service;
 
+import com.sikoramarek.fiszki.errors.BadRequestError;
+import com.sikoramarek.fiszki.errors.NoPermissionError;
+import com.sikoramarek.fiszki.errors.NotFoundError;
+import com.sikoramarek.fiszki.errors.NotLoggedError;
 import com.sikoramarek.fiszki.model.Answer;
 import com.sikoramarek.fiszki.model.Question;
 import com.sikoramarek.fiszki.model.Tag;
 import com.sikoramarek.fiszki.model.UserModel;
 import com.sikoramarek.fiszki.model.projections.QuestionOnly;
-import com.sikoramarek.fiszki.repository.*;
+import com.sikoramarek.fiszki.repository.AnswerRepository;
+import com.sikoramarek.fiszki.repository.QuestionRepository;
+import com.sikoramarek.fiszki.repository.TagRepository;
+import com.sikoramarek.fiszki.repository.UserRepository;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.validation.ConstraintViolationException;
 import java.security.Principal;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.sikoramarek.fiszki.service.authentication.SecurityConstants.checkForAdmin;
 
 @Service
 public class QuestionService {
@@ -40,21 +47,12 @@ public class QuestionService {
 		this.userRepository = userRepository;
 	}
 
-	private boolean checkForAdmin() {
-		Collection<? extends GrantedAuthority> authority = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
-		if (authority.stream().anyMatch(o -> o.getAuthority().equals("ROLE_ADMIN"))) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	public ResponseEntity<Collection<QuestionOnly>> getUserQuestions(String userName){
+	public ResponseEntity<Collection<QuestionOnly>> getUserQuestions(String userName) {
 		if (checkForAdmin()) {
 			Collection<QuestionOnly> questions = questionRepository.findQuestionsByUser(userName);
 			return new ResponseEntity<>(questions, HttpStatus.OK);
 		} else {
-			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+			throw new NoPermissionError("Only for Administrators");
 		}
 	}
 
@@ -62,7 +60,7 @@ public class QuestionService {
 		if (checkForAdmin()) {
 			return questionRepository.findAll(PageRequest.of(page, size));
 		}
-		return questionRepository.findAllByAcceptedTrue(PageRequest.of(page, size));
+		return questionRepository.findQuestionsByAcceptedTrue(PageRequest.of(page, size));
 	}
 
 	public ResponseEntity<List<Question>> getQuestionById(Long question_id) {
@@ -70,8 +68,7 @@ public class QuestionService {
 		return optionalQuestion
 				.map(question ->
 						new ResponseEntity<>(Collections.singletonList(question), HttpStatus.OK))
-				.orElseGet(() ->
-						new ResponseEntity<>(HttpStatus.NOT_FOUND));
+				.orElseThrow(() -> new NotFoundError("Question with ID " + question_id + " not found"));
 	}
 
 	public ResponseEntity<Question> newQuestion(Question question) {
@@ -85,27 +82,17 @@ public class QuestionService {
 					answerRepository.save(answer);
 				});
 			} catch (DataAccessException | ConstraintViolationException e) {
-				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+				throw new BadRequestError("Answer must be unique and not empty");
 			}
 		}
 		return new ResponseEntity<>(question, HttpStatus.OK);
 	}
 
-	public ResponseEntity<Question> editQuestion(Question newQuestion, Long question_id, Principal principal) {
-		if (principal == null) {
-			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-		}
-		Optional<Question> optionalQuestion = questionRepository.findById(question_id);
-		if (!optionalQuestion.isPresent()) {
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}
-		Question question = optionalQuestion.get();
-		if (!(principal.getName().equals(question.getUser()) || checkForAdmin())) {
-			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-		}
+	public ResponseEntity<Question> editQuestion(Question newQuestion, Long questionId, Principal principal) {
+		Question question = checkForPermissionsAndExistence(questionId, principal);
 		for (Tag tag : newQuestion.getTags()) {
 			if (!tagRepository.existsById(tag.getId())) {
-				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+				throw new BadRequestError("Tag of ID " + tag.getId() + " not found");
 			}
 		}
 		question.setTags(newQuestion.getTags());
@@ -114,42 +101,32 @@ public class QuestionService {
 		try {
 			questionRepository.save(question);
 		} catch (DataAccessException | ConstraintViolationException e) {
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			throw new BadRequestError("Problem saving question, fields must not be empty");
 		}
 		return new ResponseEntity<>(question, HttpStatus.OK);
 	}
 
-	public ResponseEntity<Question> deleteQuestion(Long question_id, Principal principal) {
-		if (principal == null) {
-			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-		}
-		Optional<Question> optionalQuestion = questionRepository.findById(question_id);
-		if (!optionalQuestion.isPresent()) {
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}
-		Question question = optionalQuestion.get();
-		if (!(principal.getName().equals(question.getUser()) || checkForAdmin())) {
-			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-		}
+	public ResponseEntity<Question> deleteQuestion(Long questionId, Principal principal) {
+		Question question = checkForPermissionsAndExistence(questionId, principal);
 		questionRepository.delete(question);
 		return new ResponseEntity<>(question, HttpStatus.OK);
 	}
 
 	public ResponseEntity<List<Question>> getRandom(Principal principal) {
 		Page<Question> questionPage;
-		if (principal != null && getCurrentUserKnownQuestionIds().size() > 0) {
+		if (principal != null && getCurrentUserKnownQuestionIds(principal).size() > 0) {
 			Long quantity = questionRepository
 					.countQuestionByAcceptedTrueAndIdNotIn(
-							getCurrentUserKnownQuestionIds());
+							getCurrentUserKnownQuestionIds(principal));
 			int index = (int) (Math.random() * quantity);
 			questionPage = questionRepository
 					.findQuestionsByIdNotIn(
-							getCurrentUserKnownQuestionIds(),
+							getCurrentUserKnownQuestionIds(principal),
 							PageRequest.of(index, 1, Sort.unsorted()));
 		} else {
 			Long quantity = questionRepository.countByAcceptedTrue();
 			int index = (int) (Math.random() * quantity);
-			questionPage = questionRepository.findAllByAcceptedTrue(PageRequest.of(index, 1, Sort.unsorted()));
+			questionPage = questionRepository.findQuestionsByAcceptedTrue(PageRequest.of(index, 1, Sort.unsorted()));
 		}
 		if (questionPage.hasContent()) {
 			return new ResponseEntity<>(Collections.singletonList(questionPage.getContent().get(0)), HttpStatus.OK);
@@ -157,17 +134,15 @@ public class QuestionService {
 		return new ResponseEntity<>(Collections.emptyList(), HttpStatus.OK);
 	}
 
-	private Collection<Long> getCurrentUserKnownQuestionIds() {
-		String userName = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		Collection<Question> knownQuestions = userRepository.getUserByUsername(userName).getKnownQuestions();
+	private Collection<Long> getCurrentUserKnownQuestionIds(Principal principal) {
+		Collection<Question> knownQuestions = userRepository.getUserByUsername(principal.getName()).getKnownQuestions();
 		return knownQuestions.stream().map(Question::getId).collect(Collectors.toList());
 	}
 
-	public ResponseEntity markQuestionAsKnown(Principal principal, Long question_id) {
+	public ResponseEntity markQuestionAsKnown(Principal principal, Long questionId) {
 		if (principal != null) {
-			String userName = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-			UserModel user = userRepository.getUserByUsername(userName);
-			Optional<Question> optionalQuestion = questionRepository.findQuestionById(question_id);
+			UserModel user = userRepository.getUserByUsername(principal.getName());
+			Optional<Question> optionalQuestion = questionRepository.findQuestionById(questionId);
 			if (optionalQuestion.isPresent()) {
 				Question question = optionalQuestion.get();
 				Set<UserModel> usersKnownThisQuestion = question.getUsersKnownThisQuestion();
@@ -179,16 +154,16 @@ public class QuestionService {
 				questionRepository.save(question);
 				return new ResponseEntity(HttpStatus.OK);
 			} else {
-				return new ResponseEntity(HttpStatus.NOT_FOUND);
+				throw new NotFoundError("Question of ID " + questionId + " not found");
 			}
 		} else {
-			return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+			throw new NotLoggedError("You must be logged in");
 		}
 	}
 
 	public ResponseEntity<Collection<Question>> getKnownQuestions(Principal principal) {
 		if (principal == null) {
-			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+			throw new NotLoggedError("You must be logged in");
 		}
 		Long userId = userRepository.getId(principal.getName());
 		Collection<Question> knownQuestions =
@@ -203,26 +178,30 @@ public class QuestionService {
 			List<Question> questionList = questionRepository.findQuestionsByTagsContaining(optionalTag.get());
 			return new ResponseEntity<>(questionList, HttpStatus.OK);
 		} else {
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			throw new NotFoundError("Tag of ID " + tagId + "not found");
 		}
 	}
 
-	public ResponseEntity<List<Question>> getRandomByTag(Principal principal, Long tag_id) {
+	public ResponseEntity<List<Question>> getRandomByTag(Principal principal, Long tagId) {
 		Page<Question> questionPage;
 		Tag tag;
-		Optional<Tag> optionalTag = tagRepository.findById(tag_id);
+		Optional<Tag> optionalTag = tagRepository.findById(tagId);
+		Collection<Long> knownQuestionsId = Collections.emptyList();
 		if (optionalTag.isPresent()) {
 			tag = optionalTag.get();
 		} else {
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			throw new NotFoundError("Tag of ID " + tagId + " not found");
 		}
-		if (principal != null && getCurrentUserKnownQuestionIds().size() > 0) {
+		if (principal != null){
+			knownQuestionsId = getCurrentUserKnownQuestionIds(principal);
+		}
+		if (knownQuestionsId.size() > 0) {
 			Long quantity = questionRepository
 					.countQuestionsByTagsContainingAndAcceptedTrueAndIdNotIn(
-							tag, getCurrentUserKnownQuestionIds());
+							tag, knownQuestionsId);
 			int index = (int) (Math.random() * quantity);
 			questionPage = questionRepository.findQuestionsByIdNotInAndAcceptedTrueAndTagsContaining(
-					getCurrentUserKnownQuestionIds(), tag, PageRequest.of(index, 1, Sort.unsorted()));
+					knownQuestionsId, tag, PageRequest.of(index, 1, Sort.unsorted()));
 		} else {
 			Long quantity = questionRepository.countQuestionByTagsContainingAndAcceptedTrue(tag);
 			int index = (int) (Math.random() * quantity);
@@ -234,5 +213,20 @@ public class QuestionService {
 			return new ResponseEntity<>(Collections.singletonList(questionPage.getContent().get(0)), HttpStatus.OK);
 		}
 		return new ResponseEntity<>(new ArrayList<>(), HttpStatus.OK);
+	}
+
+	private Question checkForPermissionsAndExistence(Long questionId, Principal principal) {
+		if (principal == null) {
+			throw new NotLoggedError("Only for logged users");
+		}
+		Optional<Question> optionalQuestion = questionRepository.findById(questionId);
+		if (!optionalQuestion.isPresent()) {
+			throw new NotFoundError("Question of ID " + " not found");
+		}
+		Question question = optionalQuestion.get();
+		if (!(principal.getName().equals(question.getUser()) || checkForAdmin())) {
+			throw new NoPermissionError("You have to be owner or administrator");
+		}
+		return question;
 	}
 }

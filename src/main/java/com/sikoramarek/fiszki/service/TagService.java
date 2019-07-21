@@ -1,5 +1,8 @@
 package com.sikoramarek.fiszki.service;
 
+import com.sikoramarek.fiszki.errors.BadRequestError;
+import com.sikoramarek.fiszki.errors.ConflictError;
+import com.sikoramarek.fiszki.errors.NotFoundError;
 import com.sikoramarek.fiszki.model.Question;
 import com.sikoramarek.fiszki.model.Tag;
 import com.sikoramarek.fiszki.repository.QuestionRepository;
@@ -21,12 +24,9 @@ import java.util.stream.Collectors;
 public class TagService {
 
 	private TagRepository tagRepository;
-	private UserRepository userRepository;
 
-	public TagService(TagRepository tagRepository,
-	                  UserRepository userRepository) {
+	public TagService(TagRepository tagRepository) {
 		this.tagRepository = tagRepository;
-		this.userRepository = userRepository;
 	}
 
 	public ResponseEntity<Collection<Tag>> getAll() {
@@ -38,12 +38,12 @@ public class TagService {
 		Optional<Tag> optionalTag = tagRepository.findById(tagId);
 		return optionalTag.<ResponseEntity<Collection<Tag>>>map(
 				tag -> new ResponseEntity<>(Collections.singleton(tag), HttpStatus.OK))
-				.orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+				.orElseThrow(() -> new NotFoundError("Tag of ID " + tagId + " not found"));
 	}
 
 	public ResponseEntity<Collection<Tag>> newTag(Tag tag) {
 		if (tag.getTagName().length() == 0) {
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			throw new BadRequestError("Tag name must not be empty");
 		}
 		if (tagRepository.findTagByTagNameEquals(tag.getTagName()).isPresent()) {
 			return new ResponseEntity<>(HttpStatus.CONFLICT);
@@ -55,10 +55,10 @@ public class TagService {
 
 	public ResponseEntity<Collection<Tag>> editTag(Tag newTag, Long tagId) {
 		if (newTag.getTagName().length() == 0){
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			throw new BadRequestError("Tag name must not be empty");
 		}
 		if (tagRepository.findTagByTagNameEquals(newTag.getTagName()).isPresent()){
-			return new ResponseEntity<>(HttpStatus.CONFLICT);
+			throw new ConflictError(newTag.getTagName() + " exists");
 		}
 		Optional<Tag> tag = tagRepository.findById(tagId);
 		if (tag.isPresent()) {
@@ -67,7 +67,7 @@ public class TagService {
 			tagRepository.save(tagToEdit);
 			return new ResponseEntity<>(Collections.singleton(tagToEdit), HttpStatus.OK);
 		} else {
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			throw new NotFoundError("Tag of ID " + tagId + "not found");
 		}
 	}
 
@@ -76,14 +76,7 @@ public class TagService {
 			tagRepository.deleteById(tagId);
 			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (Exception e) {
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			throw new NotFoundError("Tag of ID " + tagId + "not found");
 		}
 	}
-
-	private Collection<Long> getCurrentUserKnownQuestionIds() {
-		String userName = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		Collection<Question> knownQuestions = userRepository.getUserByUsername(userName).getKnownQuestions();
-		return knownQuestions.stream().map(Question::getId).collect(Collectors.toList());
-	}
-
 }
