@@ -3,6 +3,7 @@ package com.sikoramarek.fiszki.repository;
 import com.sikoramarek.fiszki.model.Question;
 import com.sikoramarek.fiszki.model.Tag;
 import com.sikoramarek.fiszki.model.UserModel;
+import com.sikoramarek.fiszki.model.projections.QuestionOnly;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -34,7 +35,7 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 
 	Page<Question> findAll(Pageable pageable);
 
-	Page<Question> findAllByAcceptedTrue(Pageable pageable);
+	Page<Question> findQuestionsByAcceptedTrue(Pageable pageable);
 
 	Page<Question> findAllByTagsContainingAndAcceptedTrue(Tag tag, Pageable pageable);
 
@@ -45,7 +46,6 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 
 	Optional<Question> findQuestionById(Long questionID);
 
-	@Transactional
 	@Query(nativeQuery = true, value =
 			"select q.user_id, question_id, id, title, question, accepted " +
 					"from user_known_question " +
@@ -59,6 +59,5 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 	@Query(nativeQuery = true, value = "UPDATE questions q SET accepted = TRUE where q.id = ?1")
 	void setAccepted(Long questionID);
 
-	@Query(value = "SELECT * FROM questions q WHERE q.user_id = ?1", nativeQuery = true)
-	List<Question> findQuestionsByUserName(String userName);
+	List<QuestionOnly> findQuestionsByUser(String userName);
 }

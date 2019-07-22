@@ -1,6 +1,9 @@
 package com.sikoramarek.fiszki.controller;
 
 import com.sikoramarek.fiszki.model.Question;
+import com.sikoramarek.fiszki.model.UserModel;
+import com.sikoramarek.fiszki.model.projections.AnswerOnly;
+import com.sikoramarek.fiszki.model.projections.QuestionOnly;
 import com.sikoramarek.fiszki.repository.QuestionRepository;
 import com.sikoramarek.fiszki.service.AnswerService;
 import com.sikoramarek.fiszki.service.QuestionService;
@@ -24,7 +27,7 @@ public class AdminController {
 	private UserService userService;
 
 	@Autowired
-	public AdminController(QuestionRepository questionRepository, QuestionService questionService, AnswerService answerService, UserService userService){
+	public AdminController(QuestionRepository questionRepository, QuestionService questionService, AnswerService answerService, UserService userService) {
 		this.questionRepository = questionRepository;
 		this.questionService = questionService;
 		this.answerService = answerService;
@@ -44,17 +47,17 @@ public class AdminController {
 	}
 
 	@GetMapping("admin/users")
-	public ResponseEntity<Collection> getUsers() {
+	public ResponseEntity<Collection<UserModel>> getUsers() {
 		return userService.getAllUsers();
 	}
 
 	@GetMapping("admin/users/{userName}/questions")
-	public ResponseEntity<Collection> getUserQuestions(@PathVariable("userName") String userName) {
+	public ResponseEntity<Collection<QuestionOnly>> getUserQuestions(@PathVariable("userName") String userName) {
 		return questionService.getUserQuestions(userName);
 	}
 
 	@GetMapping("admin/users/{userName}/answers")
-	public ResponseEntity<Collection> getUserAnswers(@PathVariable("userName") String userName) {
+	public ResponseEntity<Collection<AnswerOnly>> getUserAnswers(@PathVariable("userName") String userName) {
 		return answerService.getUserAnswers(userName);
 	}
 }

@@ -1,6 +1,11 @@
 package com.sikoramarek.fiszki.service;
 
+import com.sikoramarek.fiszki.errors.BadRequestError;
+import com.sikoramarek.fiszki.errors.NoPermissionError;
+import com.sikoramarek.fiszki.errors.NotFoundError;
+import com.sikoramarek.fiszki.errors.NotLoggedError;
 import com.sikoramarek.fiszki.model.Answer;
+import com.sikoramarek.fiszki.model.projections.AnswerOnly;
 import com.sikoramarek.fiszki.repository.AnswerRepository;
 import com.sikoramarek.fiszki.repository.QuestionRepository;
 import org.hibernate.exception.ConstraintViolationException;
@@ -8,14 +13,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+
+import static com.sikoramarek.fiszki.service.authentication.SecurityConstants.checkForAdmin;
 
 @Service
 public class AnswerService {
@@ -30,32 +35,22 @@ public class AnswerService {
 		this.questionRepository = questionRepository;
 	}
 
-	public ResponseEntity<Collection> getUserAnswers(String userName){
+	public ResponseEntity<Collection<AnswerOnly>> getUserAnswers(String userName){
 		if (checkForAdmin()) {
-			Collection<Answer> answers = answerRepository.findAnswersByUserName(userName);
+			Collection<AnswerOnly> answers = answerRepository.findAnswersByUser(userName);
 			return new ResponseEntity<>(answers, HttpStatus.OK);
 		} else {
-			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+			throw new NoPermissionError("Only for administrators");
 		}
 	}
 
 	public ResponseEntity<Answer> editAnswerById(Answer newAnswer, Long answer_id, Principal principal) {
-		if (principal == null) {
-			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-		}
-		Optional<Answer> optionalAnswer = answerRepository.findById(answer_id);
-		if (!optionalAnswer.isPresent()) {
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}
-		Answer answer = optionalAnswer.get();
-		if (!(principal.getName().equals(answer.getUser()) || checkForAdmin())) {
-			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-		}
+		Answer answer = checkForPermissionsAndExistence(answer_id, principal);
 		answer.setAnswer(newAnswer.getAnswer());
 		try {
 			answerRepository.save(answer);
 		} catch (DataAccessException | javax.validation.ConstraintViolationException e) {
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			throw new BadRequestError("Answer must be unique and not null");
 		}
 		return new ResponseEntity<>(answer, HttpStatus.OK);
 	}
@@ -71,32 +66,29 @@ public class AnswerService {
 			answerRepository.save(answer);
 			return new ResponseEntity<>(answer, HttpStatus.OK);
 		} catch (DataAccessException | ConstraintViolationException e) {
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			throw new BadRequestError("Answer must be unique and not null");
 		}
 	}
 
 	public ResponseEntity<Answer> deleteAnswer(Long answer_id, Principal principal) {
-		if (principal == null) {
-			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-		}
-		Optional<Answer> optionalAnswer = answerRepository.findById(answer_id);
-		if (!optionalAnswer.isPresent()) {
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}
-		Answer answer = optionalAnswer.get();
-		if (!(principal.getName().equals(answer.getUser()) || checkForAdmin())) {
-			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-		}
+		Answer answer = checkForPermissionsAndExistence(answer_id, principal);
 		answerRepository.delete(answer);
 		return new ResponseEntity<>(answer, HttpStatus.OK);
 	}
 
-	private boolean checkForAdmin() {
-		Collection<? extends GrantedAuthority> authority = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
-		if (authority.stream().anyMatch(o -> o.getAuthority().equals("ROLE_ADMIN"))) {
-			return true;
-		} else {
-			return false;
+	private Answer checkForPermissionsAndExistence(Long answerId, Principal principal){
+		if (principal == null) {
+			throw new NotLoggedError("Only for logged users");
 		}
+		Optional<Answer> optionalAnswer = answerRepository.findById(answerId);
+		if (!optionalAnswer.isPresent()) {
+			throw new NotFoundError("Answer of ID " + " not found");
+		}
+		Answer answer = optionalAnswer.get();
+		if (!(principal.getName().equals(answer.getUser()) || checkForAdmin())) {
+			throw new NoPermissionError("You have to be owner or administrator");
+		}
+		return answer;
 	}
+
 }
