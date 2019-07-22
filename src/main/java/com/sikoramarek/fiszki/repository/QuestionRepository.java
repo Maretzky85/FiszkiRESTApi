@@ -29,8 +29,6 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 
 	Page<Question> findQuestionsByIdNotIn(Collection<Long> ids, Pageable pageable);
 
-	Page<Question> getQuestionsByAcceptedFalse(Pageable pageable);
-
 	List<Question> findQuestionsByTagsContaining(Tag tag);
 
 	Page<Question> findAll(Pageable pageable);
@@ -42,8 +40,6 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 	Page<Question> findQuestionsByIdNotInAndAcceptedTrueAndTagsContaining(
 			Collection<Long> questions, Tag tag, Pageable pageable);
 
-	Collection<Question> findQuestionsByUsersKnownThisQuestionContains(UserModel user);
-
 	Optional<Question> findQuestionById(Long questionID);
 
 	@Query(nativeQuery = true, value =
@@ -53,11 +49,6 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 					"on user_known_question.question_id = q.id " +
 					"where user_known_question.user_id = ?1")
 	List<Question> findQuestionsByUsersKnownThisQuestion(Long userId);
-
-	@Transactional
-	@Modifying
-	@Query(nativeQuery = true, value = "UPDATE questions q SET accepted = TRUE where q.id = ?1")
-	void setAccepted(Long questionID);
 
 	List<QuestionOnly> findQuestionsByUser(String userName);
 }

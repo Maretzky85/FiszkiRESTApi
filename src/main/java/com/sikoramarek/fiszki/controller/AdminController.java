@@ -9,7 +9,6 @@ import com.sikoramarek.fiszki.service.AnswerService;
 import com.sikoramarek.fiszki.service.QuestionService;
 import com.sikoramarek.fiszki.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,14 +35,7 @@ public class AdminController {
 
 	@PostMapping("admin/accept/{questionId}")
 	public ResponseEntity<Question> acceptQuestion(@PathVariable("questionId") Long questionId) {
-		if (questionRepository.findQuestionById(questionId).isPresent()) {
-			questionRepository.setAccepted(questionId);
-			Question question = questionRepository.findQuestionById(questionId).get();
-			question.setAccepted(true);
-			return new ResponseEntity<>(question, HttpStatus.ACCEPTED);
-		} else {
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}
+		return questionService.acceptQuestion(questionId);
 	}
 
 	@GetMapping("admin/users")
