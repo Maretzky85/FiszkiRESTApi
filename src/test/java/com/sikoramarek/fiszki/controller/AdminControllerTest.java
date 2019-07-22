@@ -24,23 +24,58 @@ public class AdminControllerTest extends AbstractTest {
     UserRepository userRepository;
 
     private String uri = "/admin/";
+    private Long questionId;
 
 
     @Before
     public void before() throws Exception {
         Question question = new Question();
-        question.setAccepted(true);
         question.setQuestion("uuu");
         question.setTitle("aaa");
         String jsonPost = mapToJson(question);
         MvcResult postResult = performPost("/questions", jsonPost, USER);
-        Long questionId = mapFromJson(postResult.getResponse().getContentAsString(), Question.class).getId();
+        questionId = mapFromJson(postResult.getResponse().getContentAsString(), Question.class).getId();
 
         Answer answer = new Answer();
         answer.setAnswer("Answer to question");
         answer.setQuestion(question);
         jsonPost = mapToJson(answer);
         performPost("/questions/"+ questionId + "/answers", jsonPost, USER);
+    }
+
+    private Question getQuestionById(Long questionId) {
+        return questionRepository.findQuestionById(questionId).get();
+    }
+
+
+    @Test
+    public void acceptQuestion() throws Exception {
+        String jsonPost = mapToJson(getQuestionById(questionId));
+        MvcResult mvcResult = performPost(uri + "accept/" + questionId, jsonPost, UserType.ADMIN);
+
+        int status = mvcResult.getResponse().getStatus();
+        String responseString = mvcResult.getResponse().getContentAsString();
+        Question questions = super.mapFromJson(responseString, Question.class);
+        assertEquals(200, status);
+        assertEquals(true, questions.isAccepted() );
+    }
+
+    @Test
+    public void acceptQuestionNotAdmin() throws Exception {
+        String jsonPost = mapToJson(getQuestionById(questionId));
+        MvcResult mvcResult = performPost(uri + "accept/" + questionId, jsonPost, UserType.USER);
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(401, status);
+    }
+
+    @Test
+    public void acceptQuestionUnlogged() throws Exception {
+        String jsonPost = mapToJson(getQuestionById(questionId));
+        MvcResult mvcResult = performPost(uri + "accept/" + questionId, jsonPost, UNLOGGED);
+
+        int status = mvcResult.getResponse().getStatus();
+        assertEquals(401, status);
     }
 
     @Test
