@@ -94,7 +94,6 @@ public abstract class AbstractTest {
         questionRepository.deleteAll();
         tagRepository.deleteAll();
         answerRepository.deleteAll();
-//        userRepository.deleteAll();
     }
 
     protected String mapToJson(Object obj) throws JsonProcessingException {
@@ -115,6 +114,7 @@ public abstract class AbstractTest {
                 .content(jsonLogin))
                 .andExpect(status().isOk()).andReturn();
         String fullToken = mvcResultLogin.getResponse().getHeader(HEADER_STRING);
+        assert fullToken != null;
         return fullToken.replace(HEADER_STRING, "");
     }
 
@@ -211,12 +211,12 @@ public abstract class AbstractTest {
 
     private void initUsers() {
         Role userRole = new Role();
-        userRole.setId(2L);
         userRole.setRole("USER");
         Role adminRole = new Role();
-        adminRole.setId(1L);
         adminRole.setRole("ADMIN");
         Set<Role> roles = new HashSet<>();
+        roleRepository.save(userRole);
+        roleRepository.save(adminRole);
         roles.add(userRole);
         UserModel userModel = new UserModel();
         userModel.setUsername(userName);

@@ -2,9 +2,7 @@ package com.sikoramarek.fiszki.model;
 
 import com.fasterxml.jackson.annotation.*;
 import com.sikoramarek.fiszki.service.audit.Auditable;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.Type;
@@ -19,6 +17,9 @@ import java.util.Set;
 @EqualsAndHashCode(exclude = {"tags", "answers", "usersKnownThisQuestion"}, callSuper = false)
 @Table(name = "questions")
 @EntityListeners(AuditingEntityListener.class)
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Question extends Auditable<String> {
 
 	@Id
