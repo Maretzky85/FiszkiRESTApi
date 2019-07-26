@@ -16,6 +16,7 @@ public interface AnswerRepository extends JpaRepository<Answer, Long> {
 	List<Answer> findByQuestion_Id(Long question_id);
 	Answer findAnswerById(Long answerId);
 
-//	@Query(nativeQuery = true, value = "select * from answers a where a.user_id = ?1")
 	Collection<AnswerOnly> findAnswersByUser(String userName);
+
+	Collection<Answer> findAnswerByAnswerLike(String search);
 }

@@ -50,5 +50,12 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 					"where user_known_question.user_id = ?1")
 	List<Question> findQuestionsByUsersKnownThisQuestion(Long userId);
 
+	@Transactional
+	@Modifying
+	@Query(nativeQuery = true, value = "UPDATE questions q SET accepted = TRUE where q.id = ?1")
+	void setAccepted(Long questionID);
+
 	List<QuestionOnly> findQuestionsByUser(String userName);
+
+	Collection<Question> findQuestionsByQuestionLikeOrTitleLike(String search, String search2);
 }

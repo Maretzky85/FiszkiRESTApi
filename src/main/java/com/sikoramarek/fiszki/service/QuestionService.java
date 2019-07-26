@@ -47,20 +47,6 @@ public class QuestionService {
 		this.userRepository = userRepository;
 	}
 
-	public ResponseEntity<Question> acceptQuestion(long questionId) {
-		if (!checkForAdmin()) {
-			throw new NoPermissionError("Only for Administrators");
-		}
-		Optional<Question> optionalQuestion = questionRepository.findQuestionById(questionId);
-		if (optionalQuestion.isPresent()) {
-			Question question = optionalQuestion.get();
-			question.setAccepted(true);
-			questionRepository.save(question);
-			return new ResponseEntity<>(question, HttpStatus.OK);
-		}
-		throw new NotFoundError("Question of ID " + questionId + " not found");
-	}
-
 	public ResponseEntity<Collection<QuestionOnly>> getUserQuestions(String userName) {
 		if (checkForAdmin()) {
 			Collection<QuestionOnly> questions = questionRepository.findQuestionsByUser(userName);

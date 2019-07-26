@@ -20,6 +20,8 @@ import java.security.Principal;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.sikoramarek.fiszki.service.authentication.SecurityConstants.checkForAdmin;
+
 @Service
 public class TagService {
 
@@ -54,6 +56,7 @@ public class TagService {
 	}
 
 	public ResponseEntity<Collection<Tag>> editTag(Tag newTag, Long tagId) {
+		checkForAdmin();
 		if (newTag.getTagName().length() == 0){
 			throw new BadRequestError("Tag name must not be empty");
 		}

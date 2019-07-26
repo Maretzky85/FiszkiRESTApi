@@ -1,9 +1,6 @@
 package com.sikoramarek.fiszki.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.*;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -42,6 +39,7 @@ public class UserModel {
 
 	@ManyToMany(mappedBy = "usersKnownThisQuestion")
 	@JsonBackReference(value = "knownQuestions")
+	@JsonIgnore
 	Set<Question> knownQuestions;
 
 }
