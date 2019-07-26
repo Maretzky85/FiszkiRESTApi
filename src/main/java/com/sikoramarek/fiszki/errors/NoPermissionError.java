@@ -3,7 +3,7 @@ package com.sikoramarek.fiszki.errors;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(value = HttpStatus.UNAUTHORIZED, reason = "Don`t have permission")
+@ResponseStatus(value = HttpStatus.UNAUTHORIZED)
 public class NoPermissionError extends RuntimeException{
 
 	public NoPermissionError(String message) {
@@ -11,7 +11,7 @@ public class NoPermissionError extends RuntimeException{
 	}
 
 	public NoPermissionError() {
-		super();
+		super("Don`t have permission");
 	}
 
 }
