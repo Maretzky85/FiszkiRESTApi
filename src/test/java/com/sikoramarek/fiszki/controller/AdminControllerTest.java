@@ -29,9 +29,10 @@ public class AdminControllerTest extends AbstractTest {
 
     @Before
     public void before() throws Exception {
-        Question question = new Question();
-        question.setQuestion("uuu");
-        question.setTitle("aaa");
+        Question question = Question.builder()
+                .accepted(true)
+                .question("uuu")
+                .title("aaa").build();
         String jsonPost = mapToJson(question);
         MvcResult postResult = performPost("/questions", jsonPost, USER);
         questionId = mapFromJson(postResult.getResponse().getContentAsString(), Question.class).getId();

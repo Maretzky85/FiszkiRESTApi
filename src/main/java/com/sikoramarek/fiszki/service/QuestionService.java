@@ -222,7 +222,7 @@ public class QuestionService {
 			questionPage = questionRepository.findQuestionsByIdNotInAndAcceptedTrueAndTagsContaining(
 					knownQuestionsId, tag, PageRequest.of(index, 1, Sort.unsorted()));
 		} else {
-			Long quantity = questionRepository.countQuestionByTagsContainingAndAcceptedTrue(tag);
+			int quantity = questionRepository.countQuestionByTagsContainingAndAcceptedTrue(tag);
 			int index = (int) (Math.random() * quantity);
 			questionPage = questionRepository
 					.findAllByTagsContainingAndAcceptedTrue(tag, PageRequest.of(index, 1, Sort.unsorted()));
