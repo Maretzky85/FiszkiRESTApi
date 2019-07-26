@@ -5,7 +5,6 @@ import com.sikoramarek.fiszki.UserType;
 import com.sikoramarek.fiszki.model.Answer;
 import com.sikoramarek.fiszki.model.Question;
 import com.sikoramarek.fiszki.model.UserModel;
-import com.sikoramarek.fiszki.model.projections.AnswerOnly;
 import com.sikoramarek.fiszki.repository.UserRepository;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +14,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import static com.sikoramarek.fiszki.UserType.UNLOGGED;
 import static com.sikoramarek.fiszki.UserType.USER;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 
 public class AdminControllerTest extends AbstractTest {
@@ -28,10 +26,10 @@ public class AdminControllerTest extends AbstractTest {
 
     @Before
     public void before() throws Exception {
-        Question question = Question.builder()
-                .accepted(true)
-                .question("uuu")
-                .title("aaa").build();
+        Question question = new Question();
+        question.setAccepted(true);
+        question.setQuestion("uuu");
+        question.setTitle("aaa");
         String jsonPost = mapToJson(question);
         MvcResult postResult = performPost("/questions", jsonPost, USER);
         Long questionId = mapFromJson(postResult.getResponse().getContentAsString(), Question.class).getId();
@@ -103,10 +101,9 @@ public class AdminControllerTest extends AbstractTest {
 
         int status = mvcResult.getResponse().getStatus();
         String responseString = mvcResult.getResponse().getContentAsString();
-        System.out.println(responseString);
+        Answer[] answers = super.mapFromJson(responseString, Answer[].class);
         assertEquals(200, status);
-        //TODO check how to do projections test
-        assertTrue(responseString.length() > 2);
+        assertEquals(1, answers.length);
     }
 
     @Test

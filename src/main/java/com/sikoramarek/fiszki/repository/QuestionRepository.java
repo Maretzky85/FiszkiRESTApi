@@ -19,7 +19,7 @@ import java.util.Optional;
 @Repository
 public interface QuestionRepository extends JpaRepository<Question, Long> {
 
-	int countQuestionByTagsContainingAndAcceptedTrue(Tag tag);
+	Long countQuestionByTagsContainingAndAcceptedTrue(Tag tag);
 
 	Long countQuestionsByTagsContainingAndAcceptedTrueAndIdNotIn(Tag tag, Collection<Long> ids);
 
@@ -60,4 +60,6 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 	void setAccepted(Long questionID);
 
 	List<QuestionOnly> findQuestionsByUser(String userName);
+
+	Collection<Question> findQuestionsByQuestionLikeOrTitleLike(String search, String search2);
 }
