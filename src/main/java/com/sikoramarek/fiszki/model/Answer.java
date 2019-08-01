@@ -14,6 +14,9 @@ import javax.validation.constraints.NotNull;
 @Data
 @Table(name = "answers")
 @EqualsAndHashCode(exclude = "question", callSuper = false)
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Answer extends Auditable<String> {
 
 	@Id
