@@ -29,7 +29,7 @@ public class AdminControllerTest extends AbstractTest {
     public void acceptQuestion() throws Exception {
         assertEquals(questionRepository.count(), 0);
 
-        Long questionId = prepareQuestionAndReturnId(false);
+        Long questionId = prepareQuestionAndReturnId(false, false);
 
         MvcResult mvcResult = performPost(uri + "accept/" + questionId, mapToJson(""), ADMIN);
 
@@ -44,7 +44,7 @@ public class AdminControllerTest extends AbstractTest {
     public void acceptQuestionNotAdmin() throws Exception {
         assertEquals(questionRepository.count(), 0);
 
-        Long questionId = prepareQuestionAndReturnId(false);
+        Long questionId = prepareQuestionAndReturnId(false, false);
 
         MvcResult mvcResult = performPost(uri + "accept/" + questionId, mapToJson(""), UserType.USER);
 
@@ -56,7 +56,7 @@ public class AdminControllerTest extends AbstractTest {
     public void acceptQuestionUnlogged() throws Exception {
         assertEquals(questionRepository.count(), 0);
 
-        Long questionId = prepareQuestionAndReturnId(false);
+        Long questionId = prepareQuestionAndReturnId(false, false);
 
         MvcResult mvcResult = performPost(uri + "accept/" + questionId, mapToJson(""), UNLOGGED);
 
@@ -95,7 +95,7 @@ public class AdminControllerTest extends AbstractTest {
     public void getUserQuestions() throws Exception {
         assertEquals(questionRepository.count(), 0);
 
-        prepareQuestionAndReturnId(false);
+        prepareQuestionAndReturnId(false, false);
 
         MvcResult mvcResult = performGet(uri + "users/" + super.userName + "/questions", UserType.ADMIN);
 
@@ -110,7 +110,7 @@ public class AdminControllerTest extends AbstractTest {
     public void getUserQuestionsNotAdmin() throws Exception {
         assertEquals(questionRepository.count(), 0);
 
-        prepareQuestionAndReturnId(false);
+        prepareQuestionAndReturnId(false, false);
 
         MvcResult mvcResult = performGet(uri + "users/" + super.userName + "/questions", USER);
 
@@ -122,7 +122,7 @@ public class AdminControllerTest extends AbstractTest {
     public void getUserQuestionsUnlogged() throws Exception {
         assertEquals(questionRepository.count(), 0);
 
-        prepareQuestionAndReturnId(false);
+        prepareQuestionAndReturnId(false, false);
 
         MvcResult mvcResult = performGet(uri + "users/" + super.userName + "/questions", UNLOGGED);
 
@@ -135,7 +135,7 @@ public class AdminControllerTest extends AbstractTest {
         assertEquals(questionRepository.count(), 0);
         assertEquals(answerRepository.count(), 0);
 
-        prepareQuestionAndReturnId(true);
+        prepareQuestionAndReturnId(true, false);
 
         MvcResult mvcResult = performGet(uri + "users/" + super.userName + "/answers", UserType.ADMIN);
 
@@ -152,7 +152,7 @@ public class AdminControllerTest extends AbstractTest {
         assertEquals(questionRepository.count(), 0);
         assertEquals(answerRepository.count(), 0);
 
-        prepareQuestionAndReturnId(true);
+        prepareQuestionAndReturnId(true, false);
 
         MvcResult mvcResult = performGet(uri + "users/" + super.userName + "/answers", USER);
 
@@ -165,7 +165,7 @@ public class AdminControllerTest extends AbstractTest {
         assertEquals(questionRepository.count(), 0);
         assertEquals(answerRepository.count(), 0);
 
-        prepareQuestionAndReturnId(true);
+        prepareQuestionAndReturnId(true, false);
 
         MvcResult mvcResult = performGet(uri + "users/" + super.userName + "/answers", UNLOGGED);
 

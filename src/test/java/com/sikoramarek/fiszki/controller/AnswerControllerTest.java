@@ -25,7 +25,7 @@ public class AnswerControllerTest extends AbstractTest {
         String test2String = "TestingSomeOtherModificationToAnswer";
         assertEquals(questionRepository.count(), 0);
         assertEquals(answerRepository.count(), 0);
-        prepareQuestionAndReturnId(true);
+        prepareQuestionAndReturnId(true, false);
 
         Answer answer = answerRepository.findAll().get(0);
 
@@ -47,7 +47,7 @@ public class AnswerControllerTest extends AbstractTest {
         String test1String = "TestingSomeModificationToAnswer";
         assertEquals(questionRepository.count(), 0);
         assertEquals(answerRepository.count(), 0);
-        prepareQuestionAndReturnId(true);
+        prepareQuestionAndReturnId(true, false);
 
         Answer answer = answerRepository.findAll().get(0);
         answer.setAnswer(test1String);
@@ -76,7 +76,7 @@ public class AnswerControllerTest extends AbstractTest {
         assertEquals(questionRepository.count(), 0);
         assertEquals(answerRepository.count(), 0);
 
-        prepareQuestionAndReturnId(true);
+        prepareQuestionAndReturnId(true, false);
 
         Answer answer = answerRepository.findAll().get(0);
 
@@ -94,8 +94,8 @@ public class AnswerControllerTest extends AbstractTest {
         assertEquals(questionRepository.count(), 0);
         assertEquals(answerRepository.count(), 0);
 
-        prepareQuestionAndReturnId(true);
-        prepareQuestionAndReturnId(true);
+        prepareQuestionAndReturnId(true, false);
+        prepareQuestionAndReturnId(true, false);
 
         Long answer1Id = answerRepository.findAll().get(0).getId();
         Long answer2Id = answerRepository.findAll().get(1).getId();
@@ -111,7 +111,7 @@ public class AnswerControllerTest extends AbstractTest {
     public void deleteAnswerExpects401() throws Exception {
         assertEquals(questionRepository.count(), 0);
         assertEquals(answerRepository.count(), 0);
-        prepareQuestionAndReturnId(true);
+        prepareQuestionAndReturnId(true, false);
 
         Long answerId = answerRepository.findAll().get(0).getId();
 
@@ -119,7 +119,7 @@ public class AnswerControllerTest extends AbstractTest {
         assertEquals(401, mvcResult.getResponse().getStatus());
     }
 
-//    //TODO implement Edit only by owner/admin first
+    //    //TODO implement Edit only by owner/admin first
 ////    @Test
 ////    public void deleteAnswerExpects403() throws Exception {
 ////        assertEquals(403, deleteAnswerStatus(11L, UserType.UNLOGGED, ""));

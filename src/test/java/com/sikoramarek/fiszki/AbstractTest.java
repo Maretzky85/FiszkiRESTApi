@@ -210,7 +210,7 @@ public abstract class AbstractTest {
     }
 
     public String createJsonUserFromModel(UserModel userModel) {
-        return  "{\"username\":\"" + userModel.getUsername() + "\"," +
+        return "{\"username\":\"" + userModel.getUsername() + "\"," +
                 " \"password\":\"" + userModel.getPassword() + "\"," +
                 " \"email\": \"" + userModel.getEmail() + "\"}";
     }
@@ -241,14 +241,14 @@ public abstract class AbstractTest {
         initialized = true;
     }
 
-    protected Long prepareQuestionAndReturnId(boolean withAnswer) throws Exception {
+    protected Long prepareQuestionAndReturnId(boolean withAnswer, boolean accepted) throws Exception {
         Question question = Question.builder()
-                .accepted(false)
+                .accepted(accepted)
                 .title("TestTitle")
                 .question("TestQuestion").build();
-        if (withAnswer){
+        if (withAnswer) {
             Answer answer = Answer.builder()
-                    .answer("TestAnswer"+answerCount).build();
+                    .answer("TestAnswer" + answerCount).build();
             question.setAnswers(Collections.singleton(answer));
         }
         performPost("/questions", mapToJson(question), USER);
