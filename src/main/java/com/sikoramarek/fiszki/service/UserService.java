@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
@@ -82,5 +83,18 @@ public class UserService {
 		} else {
 			throw new BadRequestError("Empty fileds not allowed");
 		}
+	}
+
+	public ResponseEntity<UserModel> editUser(UserModel user){
+		if (!checkForAdmin()) {
+			throw new NoPermissionError("Only Admin can change");
+		}
+		if (!userRepository.existsUserModelByUsername(user.getUsername())) {
+			throw new NotFoundError(user.getUsername() + "not found");
+		}
+		UserModel userToEdit = userRepository.getUserByUsername(user.getUsername());
+		userToEdit.setRoles(user.getRoles());
+		userRepository.save(userToEdit);
+		return new ResponseEntity<>(userToEdit, HttpStatus.OK);
 	}
 }

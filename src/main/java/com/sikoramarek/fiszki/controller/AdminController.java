@@ -10,24 +10,19 @@ import com.sikoramarek.fiszki.service.QuestionService;
 import com.sikoramarek.fiszki.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
 
 @RestController
 public class AdminController {
 
-	private QuestionRepository questionRepository;
 	private QuestionService questionService;
 	private AnswerService answerService;
 	private UserService userService;
 
 	@Autowired
-	public AdminController(QuestionRepository questionRepository, QuestionService questionService, AnswerService answerService, UserService userService) {
-		this.questionRepository = questionRepository;
+	public AdminController(QuestionService questionService, AnswerService answerService, UserService userService) {
 		this.questionService = questionService;
 		this.answerService = answerService;
 		this.userService = userService;
@@ -52,4 +47,10 @@ public class AdminController {
 	public ResponseEntity<Collection<AnswerOnly>> getUserAnswers(@PathVariable("userName") String userName) {
 		return answerService.getUserAnswers(userName);
 	}
+
+	@PostMapping("admin/users/{userName}")
+	public ResponseEntity<UserModel> editUser(@PathVariable("userName") String userName, @RequestBody UserModel editedUser) {
+		return userService.editUser(editedUser);
+	}
+
 }
