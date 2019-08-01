@@ -38,7 +38,7 @@ create table answers
     id serial not null
         constraint answers_pkey
             primary key,
-    answer text,
+    answer text not null,
     question_id integer
         constraint questions_id_fkey
             references questions

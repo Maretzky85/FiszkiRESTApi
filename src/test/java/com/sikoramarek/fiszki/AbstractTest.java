@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sikoramarek.fiszki.model.Answer;
+import com.sikoramarek.fiszki.model.Question;
 import com.sikoramarek.fiszki.model.Role;
 import com.sikoramarek.fiszki.model.UserModel;
 import com.sikoramarek.fiszki.repository.*;
@@ -27,9 +29,11 @@ import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.Filter;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import static com.sikoramarek.fiszki.UserType.USER;
 import static com.sikoramarek.fiszki.service.authentication.SecurityConstants.HEADER_STRING;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -38,6 +42,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebAppConfiguration
 @ActiveProfiles("test")
 public abstract class AbstractTest {
+
+    private static int questionsCount = 0;
+    private static int answerCount = 0;
 
     protected MockMvc mvc;
 
@@ -101,8 +108,7 @@ public abstract class AbstractTest {
         return objectMapper.writeValueAsString(obj);
     }
 
-    protected <T> T mapFromJson(String json, Class<T> clazz)
-            throws JsonParseException, JsonMappingException, IOException {
+    protected <T> T mapFromJson(String json, Class<T> clazz) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.readValue(json, clazz);
     }
@@ -233,6 +239,20 @@ public abstract class AbstractTest {
         userModel2.setRoles(roles);
         userRepository.save(userModel2);
         initialized = true;
+    }
+
+    protected Long prepareQuestionAndReturnId(boolean withAnswer) throws Exception {
+        Question question = Question.builder()
+                .accepted(false)
+                .title("TestTitle")
+                .question("TestQuestion").build();
+        if (withAnswer){
+            Answer answer = Answer.builder()
+                    .answer("TestAnswer"+answerCount).build();
+            question.setAnswers(Collections.singleton(answer));
+        }
+        performPost("/questions", mapToJson(question), USER);
+        return questionRepository.findAll().get(0).getId();
     }
 }
 

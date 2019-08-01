@@ -46,6 +46,9 @@ public class AnswerService {
 
 	public ResponseEntity<Answer> editAnswerById(Answer newAnswer, Long answer_id, Principal principal) {
 		Answer answer = checkForPermissionsAndExistence(answer_id, principal);
+		if (newAnswer.getAnswer().length() == 0) {
+			throw new BadRequestError("Answer must be unique and not null");
+		}
 		answer.setAnswer(newAnswer.getAnswer());
 		try {
 			answerRepository.save(answer);

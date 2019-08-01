@@ -1,38 +1,25 @@
 package com.sikoramarek.fiszki.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sikoramarek.fiszki.AbstractTest;
 import com.sikoramarek.fiszki.UserType;
-import com.sikoramarek.fiszki.model.Answer;
 import com.sikoramarek.fiszki.model.Question;
 import com.sikoramarek.fiszki.model.UserModel;
-import com.sikoramarek.fiszki.model.projections.AnswerOnly;
-import com.sikoramarek.fiszki.repository.UserRepository;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MvcResult;
 
-import java.util.Collections;
-
-import static com.sikoramarek.fiszki.UserType.UNLOGGED;
 import static com.sikoramarek.fiszki.UserType.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 
 public class AdminControllerTest extends AbstractTest {
-    private static int questionsCount = 0;
-    private static int answerCount = 0;
-
-    @Autowired
-    UserRepository userRepository;
 
     private String uri = "/admin/";
 
 
     @Before
-    public void before() throws Exception {
+    public void before() {
         questionRepository.deleteAll();
         answerRepository.deleteAll();
     }
@@ -85,7 +72,7 @@ public class AdminControllerTest extends AbstractTest {
         String responseString = mvcResult.getResponse().getContentAsString();
         UserModel[] users = super.mapFromJson(responseString, UserModel[].class);
         assertEquals(200, status);
-        assertEquals(2, users.length );
+        assertEquals(2, users.length);
     }
 
     @Test
@@ -108,9 +95,9 @@ public class AdminControllerTest extends AbstractTest {
     public void getUserQuestions() throws Exception {
         assertEquals(questionRepository.count(), 0);
 
-        Long questionId = prepareQuestionAndReturnId(false);
+        prepareQuestionAndReturnId(false);
 
-        MvcResult mvcResult = performGet(uri + "users/" + super.userName+ "/questions", UserType.ADMIN);
+        MvcResult mvcResult = performGet(uri + "users/" + super.userName + "/questions", UserType.ADMIN);
 
         int status = mvcResult.getResponse().getStatus();
         String responseString = mvcResult.getResponse().getContentAsString();
@@ -125,7 +112,7 @@ public class AdminControllerTest extends AbstractTest {
 
         prepareQuestionAndReturnId(false);
 
-        MvcResult mvcResult = performGet(uri + "users/" + super.userName+ "/questions", USER);
+        MvcResult mvcResult = performGet(uri + "users/" + super.userName + "/questions", USER);
 
         int status = mvcResult.getResponse().getStatus();
         assertEquals(401, status);
@@ -137,7 +124,7 @@ public class AdminControllerTest extends AbstractTest {
 
         prepareQuestionAndReturnId(false);
 
-        MvcResult mvcResult = performGet(uri + "users/" + super.userName+ "/questions", UNLOGGED);
+        MvcResult mvcResult = performGet(uri + "users/" + super.userName + "/questions", UNLOGGED);
 
         int status = mvcResult.getResponse().getStatus();
         assertEquals(401, status);
@@ -150,7 +137,7 @@ public class AdminControllerTest extends AbstractTest {
 
         prepareQuestionAndReturnId(true);
 
-        MvcResult mvcResult = performGet(uri + "users/" + super.userName+ "/answers", UserType.ADMIN);
+        MvcResult mvcResult = performGet(uri + "users/" + super.userName + "/answers", UserType.ADMIN);
 
         int status = mvcResult.getResponse().getStatus();
         String responseString = mvcResult.getResponse().getContentAsString();
@@ -167,7 +154,7 @@ public class AdminControllerTest extends AbstractTest {
 
         prepareQuestionAndReturnId(true);
 
-        MvcResult mvcResult = performGet(uri + "users/" + super.userName+ "/answers", USER);
+        MvcResult mvcResult = performGet(uri + "users/" + super.userName + "/answers", USER);
 
         int status = mvcResult.getResponse().getStatus();
         assertEquals(401, status);
@@ -180,23 +167,10 @@ public class AdminControllerTest extends AbstractTest {
 
         prepareQuestionAndReturnId(true);
 
-        MvcResult mvcResult = performGet(uri + "users/" + super.userName+ "/answers", UNLOGGED);
+        MvcResult mvcResult = performGet(uri + "users/" + super.userName + "/answers", UNLOGGED);
 
         int status = mvcResult.getResponse().getStatus();
         assertEquals(401, status);
     }
 
-    private Long prepareQuestionAndReturnId(boolean withAnswer) throws Exception {
-        Question question = Question.builder()
-                .accepted(false)
-                .title("TestTitle")
-                .question("TestQuestion").build();
-        if (withAnswer){
-            Answer answer = Answer.builder()
-                    .answer("TestAnswer"+answerCount).build();
-            question.setAnswers(Collections.singleton(answer));
-        }
-        performPost("/questions", mapToJson(question), USER);
-        return questionRepository.findAll().get(0).getId();
-    }
 }
