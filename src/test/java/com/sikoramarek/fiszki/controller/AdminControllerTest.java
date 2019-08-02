@@ -3,10 +3,14 @@ package com.sikoramarek.fiszki.controller;
 import com.sikoramarek.fiszki.AbstractTest;
 import com.sikoramarek.fiszki.UserType;
 import com.sikoramarek.fiszki.model.Question;
+import com.sikoramarek.fiszki.model.Role;
 import com.sikoramarek.fiszki.model.UserModel;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.test.web.servlet.MvcResult;
+
+import java.util.Collections;
+import java.util.Set;
 
 import static com.sikoramarek.fiszki.UserType.*;
 import static org.junit.Assert.assertEquals;
@@ -171,6 +175,31 @@ public class AdminControllerTest extends AbstractTest {
 
         int status = mvcResult.getResponse().getStatus();
         assertEquals(401, status);
+    }
+
+    @Test
+    public void editUser() throws Exception {
+        String testUserName = "testUser987";
+        UserModel user = new UserModel();
+        user.setUsername(testUserName);
+        user.setPassword("testPassword123");
+        user.setEmail("testMail@testmail.com");
+        MvcResult newUserResponse = performPost("/users", createJsonUserFromModel(user), UNLOGGED);
+        assertEquals(201, newUserResponse.getResponse().getStatus());
+
+        Role adminRole = roleRepository.findRoleByRoleEquals("ADMIN");
+        Set<Role> roles = Collections.singleton(adminRole);
+        user.setPassword("");
+        user.setEmail("");
+        user.setRoles(roles);
+
+        MvcResult mvcResult = performPost("/admin/users/" + testUserName, mapToJson(user), USER);
+        assertEquals(401, mvcResult.getResponse().getStatus());
+
+        mvcResult = performPost("/admin/users/" + testUserName, mapToJson(user), ADMIN);
+        assertEquals(200, mvcResult.getResponse().getStatus());
+        UserModel grantedAdminUser = mapFromJson(mvcResult.getResponse().getContentAsString(), UserModel.class);
+        assertTrue(grantedAdminUser.getRoles().contains(adminRole));
     }
 
 }
