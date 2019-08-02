@@ -9,7 +9,8 @@ import org.junit.runners.Suite;
         AnswerControllerTest.class,
         TagControllerTest.class,
         UsersControllerTest.class,
-        QuestionControllerTest.class
+        QuestionControllerTest.class,
+        SearchControllerTest.class
 })
 
 public class ControllersTest {

@@ -244,12 +244,14 @@ public abstract class AbstractTest {
     protected Long prepareQuestionAndReturnId(boolean withAnswer, boolean accepted) throws Exception {
         Question question = Question.builder()
                 .accepted(accepted)
-                .title("TestTitle")
-                .question("TestQuestion").build();
+                .title("TestTitle"+questionsCount)
+                .question("TestQuestion"+questionsCount).build();
+        questionsCount++;
         if (withAnswer) {
             Answer answer = Answer.builder()
                     .answer("TestAnswer" + answerCount).build();
             question.setAnswers(Collections.singleton(answer));
+            answerCount++;
         }
         performPost("/questions", mapToJson(question), USER);
         return questionRepository.findAll().get(0).getId();
