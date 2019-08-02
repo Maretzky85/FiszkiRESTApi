@@ -107,11 +107,11 @@ public class UsersControllerTest extends AbstractTest {
 
     @Test
     public void markQuestion() throws Exception {
-        Question question = new Question();
-//        question.setId(666L);
-        question.setAccepted(true);
-        question.setQuestion("uuu");
-        question.setTitle("aaa");
+        Question question = Question.builder()
+                .accepted(true)
+                .question("testQuestion")
+                .title("TestTitle").build();
+
         String jsonPost = mapToJson(question);
         MvcResult postResult = performPost("/questions", jsonPost, USER);
         Long newQuestionId = mapFromJson(postResult.getResponse().getContentAsString(), Question.class).getId();
@@ -127,11 +127,11 @@ public class UsersControllerTest extends AbstractTest {
 
     @Test
     public void markQuestionNotLogged() throws Exception {
-        Question question = new Question();
-        question.setId(666L);
-        question.setAccepted(true);
-        question.setQuestion("uuu");
-        question.setTitle("aaa");
+        Question question = Question.builder()
+                .id(666L)
+                .accepted(true)
+                .title("TestTitle")
+                .question("TestQuestion").build();
         String jsonPost = mapToJson(question);
         performPost("/questions", jsonPost, USER);
 

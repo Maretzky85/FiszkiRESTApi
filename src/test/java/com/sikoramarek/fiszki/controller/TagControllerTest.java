@@ -21,10 +21,6 @@ import static org.junit.Assert.*;
 
 public class TagControllerTest extends AbstractTest {
 
-    @Autowired
-    TagRepository tagRepository;
-    @Autowired
-    QuestionRepository questionRepository;
     private String uri = "/tags";
 
     @Before
