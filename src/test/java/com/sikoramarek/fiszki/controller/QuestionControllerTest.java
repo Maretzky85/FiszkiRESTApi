@@ -1,9 +1,6 @@
 package com.sikoramarek.fiszki.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sikoramarek.fiszki.AbstractTest;
-import com.sikoramarek.fiszki.DataGenerator;
-import com.sikoramarek.fiszki.UserType;
 import com.sikoramarek.fiszki.model.Answer;
 import com.sikoramarek.fiszki.model.Question;
 import com.sikoramarek.fiszki.model.Tag;
@@ -14,41 +11,17 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.util.*;
 
 import static com.sikoramarek.fiszki.UserType.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class QuestionControllerTest extends AbstractTest {
 
+    String uri = "/questions/";
+
     @Before
-    public void setUp() throws Exception {
-        super.setUp();
-        DataGenerator dataGenerator = new DataGenerator();
-        dataGenerator.generateTags().forEach(tag -> tagRepository.save(tag));
-
-        dataGenerator.generateQuestions(getTags()).forEach(question -> {
-            String jsonPost;
-            try {
-                jsonPost = mapToJson(question);
-                performPost("/questions", jsonPost, USER);
-            } catch (JsonProcessingException e) {
-                System.out.println("There is a problem with JSON");
-            } catch (Exception e) {
-                System.out.println("There is problem with saving in DB");
-            }
-        });
-
-        dataGenerator.generateAnswers(questionRepository.findAll()).forEach(answer -> {
-            String jsonPost;
-            try {
-                Long questionId = answer.getQuestion().getId();
-                jsonPost = mapToJson(answer);
-                performPost("/questions/" + questionId + "/answers", jsonPost, USER);
-            } catch (JsonProcessingException e) {
-                System.out.println("Something is wrong with JSON");
-            } catch (Exception e) {
-                System.out.println("Something wrong with adding to DB");
-            }
-        });
+    public void before() throws Exception {
+        questionRepository.deleteAll();
+        answerRepository.deleteAll();
+        tagRepository.deleteAll();
     }
 
     private Set<Tag> getTags() {
@@ -57,214 +30,321 @@ public class QuestionControllerTest extends AbstractTest {
 
     @Test
     public void getPageableQuestionsExpects200() throws Exception {
-        int page = 1;
+        assertEquals(0, questionRepository.count());
+        assertEquals(0, answerRepository.count());
+        int page = 0;
         int size = 10;
-        int status = performGet("/questions?page=" + page + "&size=" + size, USER).getResponse().getStatus();
-        assertEquals(200, status);
-        status = performGet("/questions?page=" + page + "&size=" + size, ADMIN).getResponse().getStatus();
-        assertEquals(200, status);
+        for (int i = 0; i < 10; i++) {
+            prepareQuestionAndReturnId(false, false);
+        }
+
+        MvcResult mvcResult = performGet("/questions?page=" + page + "&size=" + size, USER);
+        String response = mvcResult.getResponse().getContentAsString();
+        assertEquals(200, mvcResult.getResponse().getStatus());
+        assertTrue(response + "should have empty:true", response.contains("\"empty\":true"));
+        assertTrue(response + "should have numberOfElements: 0", response.contains("\"numberOfElements\":0"));
+
+        mvcResult = performGet("/questions?page=" + page + "&size=" + size, ADMIN);
+        response = mvcResult.getResponse().getContentAsString();
+        assertEquals(200, mvcResult.getResponse().getStatus());
+        assertTrue(response + "should have empty: false", response.contains("\"empty\":true"));
+        assertTrue(response + "should have numberOfElements:" + size, response.contains("\"numberOfElements\":" + size));
+
+        List<Question> questions = questionRepository.findAll();
+        questions.forEach(question -> {
+            question.setAccepted(true);
+            questionRepository.save(question);
+        });
+
+        mvcResult = performGet("/questions?page=" + page + "&size=" + size, USER);
+        response = mvcResult.getResponse().getContentAsString();
+        assertEquals(200, mvcResult.getResponse().getStatus());
+        assertTrue(response + "should have empty: false", response.contains("\"empty\":true"));
+        assertTrue(response + "should have numberOfElements:" + size, response.contains("\"numberOfElements\":" + size));
     }
 
     @Test
     public void getQuestionByIdExpects200() throws Exception {
-        assertEquals(200, getQuestionByIdStatus(getRandomQuestionId(), USER));
-        assertEquals(200, getQuestionByIdStatus(getRandomQuestionId(), ADMIN));
+        assertEquals(0, questionRepository.count());
+        assertEquals(0, answerRepository.count());
+
+        Long questionId = prepareQuestionAndReturnId(false, false);
+
+        MvcResult mvcResult = performGet(uri + questionId, USER);
+        assertEquals(200, mvcResult.getResponse().getStatus());
+        Question[] questions = mapFromJson(mvcResult.getResponse().getContentAsString(), Question[].class);
+        assertEquals(1, questions.length);
+        assertFalse(questions[0].getQuestion().isEmpty());
+        assertFalse(questions[0].getTitle().isEmpty());
+
+        mvcResult = performGet(uri + questionId, ADMIN);
+        assertEquals(200, mvcResult.getResponse().getStatus());
+        questions = mapFromJson(mvcResult.getResponse().getContentAsString(), Question[].class);
+        assertEquals(1, questions.length);
+        assertFalse(questions[0].getQuestion().isEmpty());
+        assertFalse(questions[0].getTitle().isEmpty());
     }
 
     @Test
     public void getQuestionByIdExpects404() throws Exception {
-        assertEquals(404, getQuestionByIdStatus(1000000L, USER));
-        assertEquals(404, getQuestionByIdStatus(1000000L, ADMIN));
-    }
+        assertEquals(0, questionRepository.count());
+        assertEquals(0, answerRepository.count());
 
-    private int getQuestionByIdStatus(Long questionId, UserType userType) throws Exception {
-        return performGet("/questions/" + questionId, userType).getResponse().getStatus();
+        MvcResult mvcResult = performGet(uri + 1230, USER);
+        assertEquals(404, mvcResult.getResponse().getStatus());
+
+        mvcResult = performGet(uri + 1230, ADMIN);
+        assertEquals(404, mvcResult.getResponse().getStatus());
     }
 
     @Test
     public void newQuestionExpects200() throws Exception {
-        assertEquals(200, newQuestionStatus(USER, 1));
-        assertEquals(200, newQuestionStatus(ADMIN, 1));
+        assertEquals(0, questionRepository.count());
+        assertEquals(0, answerRepository.count());
+
+        Question question = Question.builder().question("test").title("test").build();
+
+        MvcResult mvcResult = performPost(uri, mapToJson(question), USER);
+
+        assertEquals(200, mvcResult.getResponse().getStatus());
+        assertEquals("test", mapFromJson(mvcResult.getResponse().getContentAsString(), Question.class).getQuestion());
+
+        question = Question.builder().question("test2").title("test2").build();
+
+        mvcResult = performPost(uri, mapToJson(question), ADMIN);
+
+        assertEquals(200, mvcResult.getResponse().getStatus());
+        assertEquals("test2", mapFromJson(mvcResult.getResponse().getContentAsString(), Question.class).getQuestion());
     }
 
     @Test
     public void newQuestionExpects401() throws Exception {
-        assertEquals(401, newQuestionStatus(UNLOGGED, 0));
+        assertEquals(0, questionRepository.count());
+        assertEquals(0, answerRepository.count());
+
+        Question question = Question.builder().question("test").title("test").build();
+
+        MvcResult mvcResult = performPost(uri, mapToJson(question), UNLOGGED);
+
+        assertEquals(401, mvcResult.getResponse().getStatus());
     }
 
     @Test
     public void newQuestionExpects400() throws Exception {
-        String jsonPost = "{\"user\":null,\"id\":null,\"title\":\"New question title\",\"question\":\"New Question\",}";
-        assertEquals(400, performPost("/questions", jsonPost, USER).getResponse().getStatus());
-        assertEquals(400, performPost("/questions", jsonPost, ADMIN).getResponse().getStatus());
-    }
+        assertEquals(0, questionRepository.count());
+        assertEquals(0, answerRepository.count());
 
-    private int newQuestionStatus(UserType userType, int countModifier) throws Exception {
-        long countBeforeTest = questionRepository.count();
+        Question question = Question.builder().title("").question("").build();
 
-        String jsonPost = mapToJson(newQuestion());
-        MvcResult result = performPost("/questions", jsonPost, userType);
-        long countAfterTest = questionRepository.count();
+        MvcResult mvcResult = performPost(uri, mapToJson(question), USER);
+        assertEquals(400, mvcResult.getResponse().getStatus());
 
-        assertEquals(countBeforeTest + countModifier, countAfterTest);
-        return result.getResponse().getStatus();
-    }
-
-    private Question newQuestion() {
-        Question question = new Question();
-        question.setAccepted(false);
-        question.setQuestion("New Question");
-        question.setTitle("New question title");
-        question.setTags(getTags());
-        return question;
+        mvcResult = performPost(uri, mapToJson(question), ADMIN);
+        assertEquals(400, mvcResult.getResponse().getStatus());
     }
 
     @Test
     public void editQuestionExpects200() throws Exception {
-        assertEquals(200, editQuestionStatus(getFirstAvailableQuestionId(), "New content for question", USER, ""));
-        assertEquals(200, editQuestionStatus(getFirstAvailableQuestionId(), "New content for question 2", ADMIN, ""));
+        assertEquals(0, questionRepository.count());
+        assertEquals(0, answerRepository.count());
+        Long questionId = prepareQuestionAndReturnId(false, false);
+        String testString1 = "EditQuestionChangeAsUser";
+        String testString2 = "EditQuestionChangeAsAdmin";
+
+        Question question = Question.builder().question(testString1).title(testString1).id(questionId).build();
+        MvcResult mvcResult = performPut(uri + questionId, mapToJson(question), USER);
+        assertEquals(200, mvcResult.getResponse().getStatus());
+        question = mapFromJson(mvcResult.getResponse().getContentAsString(), Question.class);
+        assertEquals(testString1, question.getQuestion());
+        assertEquals(testString1, question.getTitle());
+
+        question.setQuestion(testString2);
+        question.setTitle(testString2);
+        mvcResult = performPut(uri + questionId, mapToJson(question), ADMIN);
+        assertEquals(200, mvcResult.getResponse().getStatus());
+        question = mapFromJson(mvcResult.getResponse().getContentAsString(), Question.class);
+        assertEquals(testString2, question.getQuestion());
+        assertEquals(testString2, question.getTitle());
     }
 
     @Test
     public void editQuestionExpects401() throws Exception {
-        assertEquals(401, editQuestionStatus(getFirstAvailableQuestionId(), "New content for question 3", UNLOGGED, ""));
+        assertEquals(0, questionRepository.count());
+        assertEquals(0, answerRepository.count());
+        Long questionId = prepareQuestionAndReturnId(false, false);
+        String testString1 = "EditQuestionChange";
+
+        Question question = Question.builder().question(testString1).title(testString1).id(questionId).build();
+        MvcResult mvcResult = performPut(uri + questionId, mapToJson(question), UNLOGGED);
+        assertEquals(401, mvcResult.getResponse().getStatus());
     }
 
     @Test
     public void editQuestionExpects404() throws Exception {
-        assertEquals(404, editQuestionStatus(getFirstAvailableQuestionId(), "New content for question 4", USER, "10000"));
-        assertEquals(404, editQuestionStatus(getFirstAvailableQuestionId(), "New content for question 5", ADMIN, "10000"));
+        assertEquals(0, questionRepository.count());
+        assertEquals(0, answerRepository.count());
+        String testString1 = "EditQuestionChange";
+        Long questionId = 1234L;
+        Question question = Question.builder().question(testString1).title(testString1).id(questionId).build();
+
+        MvcResult mvcResult = performPut(uri + questionId, mapToJson(question), USER);
+        assertEquals(404, mvcResult.getResponse().getStatus());
+
+        mvcResult = performPut(uri + questionId, mapToJson(question), ADMIN);
+        assertEquals(404, mvcResult.getResponse().getStatus());
     }
 
     @Test
     public void editQuestionExpects400() throws Exception {
-        assertEquals(400, editQuestionStatus(getFirstAvailableQuestionId(), "New content for question 4", USER, "somewhat"));
-        assertEquals(400, editQuestionStatus(getFirstAvailableQuestionId(), "New content for question 5", ADMIN, "somewhat"));
-    }
+        assertEquals(0, questionRepository.count());
+        assertEquals(0, answerRepository.count());
+        Long questionId = prepareQuestionAndReturnId(false, false);
+        Question question = Question.builder().question("").title("").id(questionId).build();
 
-    private int editQuestionStatus(Long questionId, String newQuestionContent, UserType userType, String urlModifier) throws Exception {
-        Question question = getQuestionById(questionId);
-        String oldQuestionContent = question.getQuestion();
-        question.setQuestion(newQuestionContent);
+        MvcResult mvcResult = performPut(uri + questionId, mapToJson(question), USER);
+        assertEquals(400, mvcResult.getResponse().getStatus());
 
-        String requestJson = mapToJson(question);
-        MvcResult result = performPut("/questions/" + questionId + urlModifier, requestJson, userType);
-        int status = result.getResponse().getStatus();
-        if (status != 200) {
-            assertEquals(oldQuestionContent, getQuestionById(questionId).getQuestion());
-        } else {
-            assertEquals(newQuestionContent, getQuestionById(questionId).getQuestion());
-        }
-        return status;
-    }
-
-    private Question getQuestionById(Long questionId) {
-        return questionRepository.findQuestionById(questionId).get();
+        mvcResult = performPut(uri + questionId, mapToJson(question), ADMIN);
+        assertEquals(400, mvcResult.getResponse().getStatus());
     }
 
     @Test
     public void deleteQuestionExpects200() throws Exception {
-        assertEquals(200, deleteQuestionStatus(getFirstAvailableQuestionId(), 1, USER));
-        assertEquals(200, deleteQuestionStatus(getFirstAvailableQuestionId(), 1, ADMIN));
-    }
+        assertEquals(0, questionRepository.count());
+        assertEquals(0, answerRepository.count());
+        Long questionId = prepareQuestionAndReturnId(false, false);
 
-    private Long getFirstAvailableQuestionId() {
-        return questionRepository.findAll().get(0).getId();
+        MvcResult mvcResult = performDelete(uri + questionId, USER);
+        assertEquals(200, mvcResult.getResponse().getStatus());
+
+        questionId = prepareQuestionAndReturnId(false, false);
+
+        mvcResult = performDelete(uri + questionId, ADMIN);
+        assertEquals(200, mvcResult.getResponse().getStatus());
     }
 
     @Test
     public void deleteQuestionExpects401() throws Exception {
-        assertEquals(401, deleteQuestionStatus(getFirstAvailableQuestionId(), 0, UNLOGGED));
+        assertEquals(0, questionRepository.count());
+        assertEquals(0, answerRepository.count());
+        Long questionId = prepareQuestionAndReturnId(false, false);
+
+        MvcResult mvcResult = performDelete(uri + questionId, UNLOGGED);
+        assertEquals(401, mvcResult.getResponse().getStatus());
     }
 
     @Test
     public void deleteQuestionExpects404() throws Exception {
-        assertEquals(404, deleteQuestionStatus(1111111111L, 0, USER));
-        assertEquals(404, deleteQuestionStatus(1111111111L, 0, ADMIN));
-    }
+        assertEquals(0, questionRepository.count());
+        assertEquals(0, answerRepository.count());
+        Long questionId = 1234L;
 
-    private int deleteQuestionStatus(Long questionId, int countModifier, UserType userType) throws Exception {
-        long countBeforeDelete = questionRepository.count();
+        MvcResult mvcResult = performDelete(uri + questionId, USER);
+        assertEquals(404, mvcResult.getResponse().getStatus());
 
-        MvcResult result = performDelete("/questions/" + questionId, userType);
-        long countAfterDelete = questionRepository.count();
-        assertEquals(countBeforeDelete - countModifier, countAfterDelete);
+        mvcResult = performDelete(uri + questionId, ADMIN);
+        assertEquals(404, mvcResult.getResponse().getStatus());
 
-        return result.getResponse().getStatus();
     }
 
     @Test
     public void getRandom() throws Exception {
-        assertEquals(200, getRandomStatus(USER));
-        assertEquals(200, getRandomStatus(ADMIN));
-        assertEquals(200, getRandomStatus(UNLOGGED));
-    }
+        assertEquals(0, questionRepository.count());
+        assertEquals(0, answerRepository.count());
+        prepareQuestionAndReturnId(false, true);
 
-    private int getRandomStatus(UserType userType) throws Exception {
-        MvcResult result = performGet("/questions/random", userType);
-        assertNotNull(result.getResponse().getContentAsString());
-        return result.getResponse().getStatus();
+        Arrays.stream(values()).forEach(userType -> {
+            try {
+                MvcResult mvcResult = performGet(uri + "random", userType);
+                assertEquals(200, mvcResult.getResponse().getStatus());
+                System.out.println(mvcResult.getResponse().getContentAsString());
+                Question[] questions = mapFromJson(mvcResult.getResponse().getContentAsString(), Question[].class);
+                assertEquals(1, questions.length);
+                assertNotNull(questions[0].getQuestion());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @Test
     public void getAnswersByQuestionIdExpects200() throws Exception {
-        assertEquals(200, getAnswersToQuestion(getRandomQuestionId(), USER));
-        assertEquals(200, getAnswersToQuestion(getRandomQuestionId(), ADMIN));
-        assertEquals(200, getAnswersToQuestion(getRandomQuestionId(), UNLOGGED));
-    }
+        assertEquals(0, questionRepository.count());
+        assertEquals(0, answerRepository.count());
+        Long questionId = prepareQuestionAndReturnId(true, true);
 
-    private int getAnswersToQuestion(Long questionId, UserType userType) throws Exception {
-        MvcResult result = performGet("/questions/" + questionId + "/answers", userType);
-        return result.getResponse().getStatus();
+        Arrays.stream(values()).forEach(userType -> {
+            try {
+                MvcResult result = performGet("/questions/" + questionId + "/answers", userType);
+                assertEquals(200, result.getResponse().getStatus());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @Test
     public void newAnswerExpects200() throws Exception {
-        assertEquals(200, addNewAnswerToQuestion(getRandomQuestionId(), 1, USER, "", ""));
-        assertEquals(200, addNewAnswerToQuestion(getRandomQuestionId(), 1, ADMIN, "", ""));
+        assertEquals(0, questionRepository.count());
+        assertEquals(0, answerRepository.count());
+        Long questionId = prepareQuestionAndReturnId(false, false);
+
+        Question question = questionRepository.findQuestionById(questionId).get();
+        Answer answer = Answer.builder().answer("testAnswer").question(question).build();
+
+        MvcResult mvcResult = performPost(uri + questionId + "/answers", mapToJson(answer), USER);
+        assertEquals(200, mvcResult.getResponse().getStatus());
+
+        answer = Answer.builder().answer("testAnswer2").question(question).build();
+        mvcResult = performPost(uri + questionId + "/answers", mapToJson(answer), ADMIN);
+        assertEquals(200, mvcResult.getResponse().getStatus());
+        assertEquals(200, mvcResult.getResponse().getStatus());
     }
 
     @Test
     public void newAnswerExpects401() throws Exception {
-        assertEquals(401, addNewAnswerToQuestion(getRandomQuestionId(), 0, UNLOGGED, "", ""));
+        assertEquals(0, questionRepository.count());
+        assertEquals(0, answerRepository.count());
+        Long questionId = prepareQuestionAndReturnId(false, true);
+
+        Question question = questionRepository.findQuestionById(questionId).get();
+        Answer answer = Answer.builder().answer("testAnswer").question(question).build();
+
+        MvcResult mvcResult = performPost(uri + questionId + "/answers", mapToJson(answer), UNLOGGED);
+        assertEquals(401, mvcResult.getResponse().getStatus());
     }
 
     @Test
     public void newAnswerExpects404() throws Exception {
-        assertEquals(404, addNewAnswerToQuestion(getRandomQuestionId(), 0, USER, "", "ddd"));
-        assertEquals(404, addNewAnswerToQuestion(getRandomQuestionId(), 0, ADMIN, "", "ddd"));
+        assertEquals(0, questionRepository.count());
+        assertEquals(0, answerRepository.count());
+        Long questionId = prepareQuestionAndReturnId(false, true);
+        Long nonExistentQuestionId = 12345L;
+
+        Question question = questionRepository.findQuestionById(questionId).get();
+        question.setId(nonExistentQuestionId);
+        Answer answer = Answer.builder().answer("testAnswer").question(question).build();
+
+        MvcResult mvcResult = performPost(uri + nonExistentQuestionId + "/answers", mapToJson(answer), USER);
+        assertEquals(404, mvcResult.getResponse().getStatus());
+
+        mvcResult = performPost(uri + nonExistentQuestionId + "/answers", mapToJson(answer), ADMIN);
+        assertEquals(404, mvcResult.getResponse().getStatus());
     }
 
     @Test
-    public void newAnswerExpects400() throws Exception{
-        assertEquals(400, addNewAnswerToQuestion(getRandomQuestionId(), 0, USER, "ddd", ""));
-        assertEquals(400, addNewAnswerToQuestion(getRandomQuestionId(), 0, ADMIN, "ddd", ""));
-    }
+    public void newAnswerExpects400() throws Exception {
+        assertEquals(0, questionRepository.count());
+        assertEquals(0, answerRepository.count());
+        Long questionId = prepareQuestionAndReturnId(false, true);
 
-    private Long getRandomQuestionId() {
-        List<Long> ids = new ArrayList<>();
-        questionRepository.findAll().forEach(question -> ids.add(question.getId()));
-        Random random = new Random();
+        Question question = questionRepository.findQuestionById(questionId).get();
+        Answer answer = Answer.builder().answer("").question(question).build();
 
-        return ids.get(random.nextInt(ids.size()));
-    }
+        MvcResult mvcResult = performPost(uri + questionId + "/answers", mapToJson(answer), USER);
+        assertEquals(400, mvcResult.getResponse().getStatus());
 
-    private int addNewAnswerToQuestion(Long questionId, int answerCountModifier, UserType userType,  String urlModifier1, String urlModifier2) throws Exception {
-        Question question = questionRepository.findQuestionById(getFirstAvailableQuestionId()).get();
-        long answersCountBeforeAdding = answerRepository.count();
-        Answer answer = addAnswer(question);
-        String jsonPost = mapToJson(answer);
-        MvcResult result = performPost("/questions/" + questionId + urlModifier1 + "/answers" + urlModifier2, jsonPost, userType);
-        int status = result.getResponse().getStatus();
-        long answersCountAfterAdding = answerRepository.count();
-        assertEquals(answersCountBeforeAdding + answerCountModifier, answersCountAfterAdding);
-        return status;
-    }
-
-    private Answer addAnswer(Question question) {
-        Answer answer = new Answer();
-        answer.setAnswer("Answer " + Math.random());
-        answer.setQuestion(question);
-        return answer;
+        mvcResult = performPost(uri + questionId + "/answers", mapToJson(answer), ADMIN);
+        assertEquals(400, mvcResult.getResponse().getStatus());
     }
 }

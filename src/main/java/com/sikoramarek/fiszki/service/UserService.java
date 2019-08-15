@@ -81,7 +81,7 @@ public class UserService {
 			}
 			return new ResponseEntity<>(newUser, HttpStatus.CREATED);
 		} else {
-			throw new BadRequestError("Empty fileds not allowed");
+			throw new BadRequestError("Empty fields not allowed");
 		}
 	}
 

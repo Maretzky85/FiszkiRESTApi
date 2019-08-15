@@ -11,6 +11,9 @@ import java.util.Set;
 @Entity
 @Data
 @EqualsAndHashCode(exclude = "questions")
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Tag {
 
 	@Id

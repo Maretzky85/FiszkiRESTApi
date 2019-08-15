@@ -2,68 +2,55 @@ package com.sikoramarek.fiszki.controller;
 
 import com.sikoramarek.fiszki.AbstractTest;
 import com.sikoramarek.fiszki.UserType;
-import com.sikoramarek.fiszki.model.Answer;
 import com.sikoramarek.fiszki.model.Question;
+import com.sikoramarek.fiszki.model.Role;
 import com.sikoramarek.fiszki.model.UserModel;
-import com.sikoramarek.fiszki.model.projections.AnswerOnly;
-import com.sikoramarek.fiszki.repository.UserRepository;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MvcResult;
 
-import static com.sikoramarek.fiszki.UserType.UNLOGGED;
-import static com.sikoramarek.fiszki.UserType.USER;
+import java.util.Collections;
+import java.util.Set;
+
+import static com.sikoramarek.fiszki.UserType.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 
 public class AdminControllerTest extends AbstractTest {
 
-    @Autowired
-    UserRepository userRepository;
-
     private String uri = "/admin/";
-    private Long questionId;
 
 
     @Before
-    public void before() throws Exception {
-        Question question = new Question();
-        question.setQuestion("uuu");
-        question.setTitle("aaa");
-        String jsonPost = mapToJson(question);
-        MvcResult postResult = performPost("/questions", jsonPost, USER);
-        questionId = mapFromJson(postResult.getResponse().getContentAsString(), Question.class).getId();
-
-        Answer answer = new Answer();
-        answer.setAnswer("Answer to question");
-        answer.setQuestion(question);
-        jsonPost = mapToJson(answer);
-        performPost("/questions/"+ questionId + "/answers", jsonPost, USER);
-    }
-
-    private Question getQuestionById(Long questionId) {
-        return questionRepository.findQuestionById(questionId).get();
+    public void before() {
+        questionRepository.deleteAll();
+        answerRepository.deleteAll();
     }
 
 
     @Test
     public void acceptQuestion() throws Exception {
-        String jsonPost = mapToJson(getQuestionById(questionId));
-        MvcResult mvcResult = performPost(uri + "accept/" + questionId, jsonPost, UserType.ADMIN);
+        assertEquals(questionRepository.count(), 0);
+
+        Long questionId = prepareQuestionAndReturnId(false, false);
+
+        MvcResult mvcResult = performPost(uri + "accept/" + questionId, mapToJson(""), ADMIN);
 
         int status = mvcResult.getResponse().getStatus();
         String responseString = mvcResult.getResponse().getContentAsString();
         Question questions = super.mapFromJson(responseString, Question.class);
         assertEquals(200, status);
-        assertEquals(true, questions.isAccepted() );
+        assertTrue(questions.isAccepted());
     }
 
     @Test
     public void acceptQuestionNotAdmin() throws Exception {
-        String jsonPost = mapToJson(getQuestionById(questionId));
-        MvcResult mvcResult = performPost(uri + "accept/" + questionId, jsonPost, UserType.USER);
+        assertEquals(questionRepository.count(), 0);
+
+        Long questionId = prepareQuestionAndReturnId(false, false);
+
+        MvcResult mvcResult = performPost(uri + "accept/" + questionId, mapToJson(""), UserType.USER);
 
         int status = mvcResult.getResponse().getStatus();
         assertEquals(401, status);
@@ -71,8 +58,11 @@ public class AdminControllerTest extends AbstractTest {
 
     @Test
     public void acceptQuestionUnlogged() throws Exception {
-        String jsonPost = mapToJson(getQuestionById(questionId));
-        MvcResult mvcResult = performPost(uri + "accept/" + questionId, jsonPost, UNLOGGED);
+        assertEquals(questionRepository.count(), 0);
+
+        Long questionId = prepareQuestionAndReturnId(false, false);
+
+        MvcResult mvcResult = performPost(uri + "accept/" + questionId, mapToJson(""), UNLOGGED);
 
         int status = mvcResult.getResponse().getStatus();
         assertEquals(401, status);
@@ -86,7 +76,7 @@ public class AdminControllerTest extends AbstractTest {
         String responseString = mvcResult.getResponse().getContentAsString();
         UserModel[] users = super.mapFromJson(responseString, UserModel[].class);
         assertEquals(200, status);
-        assertEquals(2, users.length );
+        assertEquals(2, users.length);
     }
 
     @Test
@@ -107,7 +97,11 @@ public class AdminControllerTest extends AbstractTest {
 
     @Test
     public void getUserQuestions() throws Exception {
-        MvcResult mvcResult = performGet(uri + "users/" + super.userName+ "/questions", UserType.ADMIN);
+        assertEquals(questionRepository.count(), 0);
+
+        prepareQuestionAndReturnId(false, false);
+
+        MvcResult mvcResult = performGet(uri + "users/" + super.userName + "/questions", UserType.ADMIN);
 
         int status = mvcResult.getResponse().getStatus();
         String responseString = mvcResult.getResponse().getContentAsString();
@@ -118,7 +112,11 @@ public class AdminControllerTest extends AbstractTest {
 
     @Test
     public void getUserQuestionsNotAdmin() throws Exception {
-        MvcResult mvcResult = performGet(uri + "users/" + super.userName+ "/questions", USER);
+        assertEquals(questionRepository.count(), 0);
+
+        prepareQuestionAndReturnId(false, false);
+
+        MvcResult mvcResult = performGet(uri + "users/" + super.userName + "/questions", USER);
 
         int status = mvcResult.getResponse().getStatus();
         assertEquals(401, status);
@@ -126,7 +124,11 @@ public class AdminControllerTest extends AbstractTest {
 
     @Test
     public void getUserQuestionsUnlogged() throws Exception {
-        MvcResult mvcResult = performGet(uri + "users/" + super.userName+ "/questions", UNLOGGED);
+        assertEquals(questionRepository.count(), 0);
+
+        prepareQuestionAndReturnId(false, false);
+
+        MvcResult mvcResult = performGet(uri + "users/" + super.userName + "/questions", UNLOGGED);
 
         int status = mvcResult.getResponse().getStatus();
         assertEquals(401, status);
@@ -134,7 +136,12 @@ public class AdminControllerTest extends AbstractTest {
 
     @Test
     public void getUserAnswers() throws Exception {
-        MvcResult mvcResult = performGet(uri + "users/" + super.userName+ "/answers", UserType.ADMIN);
+        assertEquals(questionRepository.count(), 0);
+        assertEquals(answerRepository.count(), 0);
+
+        prepareQuestionAndReturnId(true, false);
+
+        MvcResult mvcResult = performGet(uri + "users/" + super.userName + "/answers", UserType.ADMIN);
 
         int status = mvcResult.getResponse().getStatus();
         String responseString = mvcResult.getResponse().getContentAsString();
@@ -146,7 +153,12 @@ public class AdminControllerTest extends AbstractTest {
 
     @Test
     public void getUserAnswersNotAdmin() throws Exception {
-        MvcResult mvcResult = performGet(uri + "users/" + super.userName+ "/answers", USER);
+        assertEquals(questionRepository.count(), 0);
+        assertEquals(answerRepository.count(), 0);
+
+        prepareQuestionAndReturnId(true, false);
+
+        MvcResult mvcResult = performGet(uri + "users/" + super.userName + "/answers", USER);
 
         int status = mvcResult.getResponse().getStatus();
         assertEquals(401, status);
@@ -154,9 +166,40 @@ public class AdminControllerTest extends AbstractTest {
 
     @Test
     public void getUserAnswersUnlogged() throws Exception {
-        MvcResult mvcResult = performGet(uri + "users/" + super.userName+ "/answers", UNLOGGED);
+        assertEquals(questionRepository.count(), 0);
+        assertEquals(answerRepository.count(), 0);
+
+        prepareQuestionAndReturnId(true, false);
+
+        MvcResult mvcResult = performGet(uri + "users/" + super.userName + "/answers", UNLOGGED);
 
         int status = mvcResult.getResponse().getStatus();
         assertEquals(401, status);
     }
+
+    @Test
+    public void editUser() throws Exception {
+        String testUserName = "testUser987";
+        UserModel user = new UserModel();
+        user.setUsername(testUserName);
+        user.setPassword("testPassword123");
+        user.setEmail("testMail@testmail.com");
+        MvcResult newUserResponse = performPost("/users", createJsonUserFromModel(user), UNLOGGED);
+        assertEquals(201, newUserResponse.getResponse().getStatus());
+
+        Role adminRole = roleRepository.findRoleByRoleEquals("ADMIN");
+        Set<Role> roles = Collections.singleton(adminRole);
+        user.setPassword("");
+        user.setEmail("");
+        user.setRoles(roles);
+
+        MvcResult mvcResult = performPost("/admin/users/" + testUserName, mapToJson(user), USER);
+        assertEquals(401, mvcResult.getResponse().getStatus());
+
+        mvcResult = performPost("/admin/users/" + testUserName, mapToJson(user), ADMIN);
+        assertEquals(200, mvcResult.getResponse().getStatus());
+        UserModel grantedAdminUser = mapFromJson(mvcResult.getResponse().getContentAsString(), UserModel.class);
+        assertTrue(grantedAdminUser.getRoles().contains(adminRole));
+    }
+
 }

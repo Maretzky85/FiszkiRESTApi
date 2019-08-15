@@ -9,6 +9,7 @@ import com.sikoramarek.fiszki.repository.UserRepository;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MvcResult;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -41,7 +42,7 @@ public class UsersControllerTest extends AbstractTest {
 
         String responseString = mvcResult.getResponse().getContentAsString();
         UserModel userModelResponse = super.mapFromJson(responseString, UserModel.class);
-        assertNotNull( userModelResponse.getId());
+        assertNotNull(userModelResponse.getId());
         assertEquals("newUser", userModelResponse.getUsername());
         assertEquals("newUser@user.pl", userModelResponse.getEmail());
     }
@@ -81,7 +82,7 @@ public class UsersControllerTest extends AbstractTest {
     }
 
     @Test
-    public void getMarkedQuestionsNotLogged() throws Exception{
+    public void getMarkedQuestionsNotLogged() throws Exception {
         MvcResult mvcResult = performGet(uri + "/known_questions", UNLOGGED);
 
         int status = mvcResult.getResponse().getStatus();
@@ -92,7 +93,7 @@ public class UsersControllerTest extends AbstractTest {
     }
 
     @Test
-    public void getMarkedQuestionsLogged() throws Exception{
+    public void getMarkedQuestionsLogged() throws Exception {
         MvcResult mvcResult = performGet(uri + "/known_questions", USER);
 
         int status = mvcResult.getResponse().getStatus();
@@ -106,16 +107,16 @@ public class UsersControllerTest extends AbstractTest {
 
     @Test
     public void markQuestion() throws Exception {
-        Question question = new Question();
-//        question.setId(666L);
-        question.setAccepted(true);
-        question.setQuestion("uuu");
-        question.setTitle("aaa");
+        Question question = Question.builder()
+                .accepted(true)
+                .question("testQuestion")
+                .title("TestTitle").build();
+
         String jsonPost = mapToJson(question);
         MvcResult postResult = performPost("/questions", jsonPost, USER);
         Long newQuestionId = mapFromJson(postResult.getResponse().getContentAsString(), Question.class).getId();
 
-        MvcResult mvcResult = performPost(uri + "/mark_question/"+newQuestionId, jsonPost ,USER);
+        MvcResult mvcResult = performPost(uri + "/mark_question/" + newQuestionId, jsonPost, USER);
 
         int status = mvcResult.getResponse().getStatus();
         assertEquals(200, status);
@@ -125,16 +126,16 @@ public class UsersControllerTest extends AbstractTest {
     }
 
     @Test
-    public void markQuestionNotLogged() throws Exception{
-        Question question = new Question();
-        question.setId(666L);
-        question.setAccepted(true);
-        question.setQuestion("uuu");
-        question.setTitle("aaa");
+    public void markQuestionNotLogged() throws Exception {
+        Question question = Question.builder()
+                .id(666L)
+                .accepted(true)
+                .title("TestTitle")
+                .question("TestQuestion").build();
         String jsonPost = mapToJson(question);
         performPost("/questions", jsonPost, USER);
 
-        MvcResult mvcResult = performPost(uri + "/mark_question/666","",  UNLOGGED);
+        MvcResult mvcResult = performPost(uri + "/mark_question/666", "", UNLOGGED);
 
         int status = mvcResult.getResponse().getStatus();
         assertEquals(401, status);
@@ -144,8 +145,8 @@ public class UsersControllerTest extends AbstractTest {
     }
 
     @Test
-    public void markQuestionNonExisting() throws Exception{
-        MvcResult mvcResult = performPost(uri + "/mark_question/100", "" , USER);
+    public void markQuestionNonExisting() throws Exception {
+        MvcResult mvcResult = performPost(uri + "/mark_question/100", "", USER);
 
         int status = mvcResult.getResponse().getStatus();
         assertEquals(404, status);

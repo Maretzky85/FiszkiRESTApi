@@ -1,131 +1,140 @@
 package com.sikoramarek.fiszki.controller;
 
 import com.sikoramarek.fiszki.AbstractTest;
-import com.sikoramarek.fiszki.UserType;
 import com.sikoramarek.fiszki.model.Answer;
-import com.sikoramarek.fiszki.model.Question;
-import com.sikoramarek.fiszki.model.Tag;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.test.web.servlet.MvcResult;
 
-import java.util.Collections;
-
-import static com.sikoramarek.fiszki.UserType.USER;
+import static com.sikoramarek.fiszki.UserType.*;
 import static org.junit.Assert.assertEquals;
 
 public class AnswerControllerTest extends AbstractTest {
 
     private String uri = "/answers/";
-    private Long rowCount = 5L;
 
     @Before
-    public void setUp() throws Exception {
-        super.setUp();
-        prepareData();
-    }
-
-    private void prepareData() throws Exception {
-
-        for (Long i = 1L; i < rowCount; i++) {
-            Tag tag = new Tag();
-            tag.setTagName("test" + i);
-            tagRepository.save(tag);
-
-            Question question = new Question();
-            question.setAccepted(true);
-            question.setQuestion("Question" + i);
-            question.setTitle("Question title" + i);
-            question.setTags(Collections.singleton(tag));
-            String jsonPost = mapToJson(question);
-            Long questionId = mapFromJson(performPost("/questions", jsonPost, USER).getResponse().getContentAsString(), Question.class).getId();
-
-            Answer answer = new Answer();
-            answer.setAnswer("Answer " + i);
-            answer.setQuestion(question);
-            jsonPost = mapToJson(answer);
-
-            performPost("/questions/"+ questionId + "/answers", jsonPost, USER);
-        }
+    public void before() {
+        answerRepository.deleteAll();
+        questionRepository.deleteAll();
     }
 
     @Test
     public void editAnswerExpects200() throws Exception {
-        Long answer1Id = answerRepository.findAll().get(0).getId();
-        Long answer2Id = answerRepository.findAll().get(1).getId();
-        assertEquals(200, editAnswerStatus(answer1Id, UserType.USER, ""));
-        assertEquals(200, editAnswerStatus(answer2Id, UserType.ADMIN, ""));
+        String test1String = "TestingSomeModificationToAnswer";
+        String test2String = "TestingSomeOtherModificationToAnswer";
+        assertEquals(questionRepository.count(), 0);
+        assertEquals(answerRepository.count(), 0);
+        prepareQuestionAndReturnId(true, false);
+
+        Answer answer = answerRepository.findAll().get(0);
+
+        answer.setAnswer(test1String);
+        MvcResult mvcResult = performPut(uri + answer.getId(), mapToJson(answer), USER);
+        assertEquals(200, mvcResult.getResponse().getStatus());
+        Answer answer1 = mapFromJson(mvcResult.getResponse().getContentAsString(), Answer.class);
+        assertEquals(answer1.getAnswer(), test1String);
+
+        answer.setAnswer(test2String);
+        mvcResult = performPut(uri + answer.getId(), mapToJson(answer), ADMIN);
+        assertEquals(200, mvcResult.getResponse().getStatus());
+        Answer answer2 = mapFromJson(mvcResult.getResponse().getContentAsString(), Answer.class);
+        assertEquals(answer2.getAnswer(), test2String);
     }
 
     @Test
     public void editAnswerExpects401() throws Exception {
-        Long answer1Id = answerRepository.findAll().get(0).getId();
-        assertEquals(401, editAnswerStatus(answer1Id, UserType.UNLOGGED, ""));
+        String test1String = "TestingSomeModificationToAnswer";
+        assertEquals(questionRepository.count(), 0);
+        assertEquals(answerRepository.count(), 0);
+        prepareQuestionAndReturnId(true, false);
+
+        Answer answer = answerRepository.findAll().get(0);
+        answer.setAnswer(test1String);
+
+        MvcResult mvcResult = performPut(uri + answer.getId(), mapToJson(answer), UNLOGGED);
+        assertEquals(401, mvcResult.getResponse().getStatus());
     }
 
     @Test
     public void editAnswerExpects404() throws Exception {
-        Long answer1Id = answerRepository.findAll().get(0).getId();
-        Long answer2Id = answerRepository.findAll().get(1).getId();
-        assertEquals(404, editAnswerStatus(answer1Id, UserType.USER, "14444"));
-        assertEquals(404, editAnswerStatus(answer2Id, UserType.ADMIN, "14444"));
+        assertEquals(questionRepository.count(), 0);
+        assertEquals(answerRepository.count(), 0);
+
+        Answer answer = Answer.builder().answer("test").id(123L).build();
+
+        MvcResult mvcResult = performPut(uri + answer.getId(), mapToJson(answer), USER);
+        assertEquals(404, mvcResult.getResponse().getStatus());
+
+        answer.setAnswer("test2");
+        mvcResult = performPut(uri + answer.getId(), mapToJson(answer), ADMIN);
+        assertEquals(404, mvcResult.getResponse().getStatus());
     }
 
     @Test
     public void editAnswerExpects400() throws Exception {
-        Long answer1Id = answerRepository.findAll().get(0).getId();
-        Long answer2Id = answerRepository.findAll().get(1).getId();
-        assertEquals(400, editAnswerStatus(answer1Id, UserType.USER, ":user"));
-        assertEquals(400, editAnswerStatus(answer2Id, UserType.ADMIN, ":user"));
+        assertEquals(questionRepository.count(), 0);
+        assertEquals(answerRepository.count(), 0);
+
+        prepareQuestionAndReturnId(true, false);
+
+        Answer answer = answerRepository.findAll().get(0);
+
+        answer.setAnswer("");
+        MvcResult mvcResult = performPut(uri + answer.getId(), mapToJson(answer), USER);
+
+        assertEquals(400, mvcResult.getResponse().getStatus());
+
+        mvcResult = performPut(uri + answer.getId(), mapToJson(answer), ADMIN);
+        assertEquals(400, mvcResult.getResponse().getStatus());
     }
 
     @Test
     public void deleteAnswerExpects200() throws Exception {
+        assertEquals(questionRepository.count(), 0);
+        assertEquals(answerRepository.count(), 0);
+
+        prepareQuestionAndReturnId(true, false);
+        prepareQuestionAndReturnId(true, false);
+
         Long answer1Id = answerRepository.findAll().get(0).getId();
         Long answer2Id = answerRepository.findAll().get(1).getId();
-        assertEquals(200, deleteAnswerStatus(answer1Id, UserType.USER, ""));
-        assertEquals(200, deleteAnswerStatus(answer2Id, UserType.ADMIN, ""));
+
+        MvcResult mvcResult = performDelete(uri + answer1Id, USER);
+        assertEquals(200, mvcResult.getResponse().getStatus());
+
+        mvcResult = performDelete(uri + answer2Id, ADMIN);
+        assertEquals(200, mvcResult.getResponse().getStatus());
     }
 
     @Test
     public void deleteAnswerExpects401() throws Exception {
-        assertEquals(401, deleteAnswerStatus(10L, UserType.UNLOGGED, ""));
+        assertEquals(questionRepository.count(), 0);
+        assertEquals(answerRepository.count(), 0);
+        prepareQuestionAndReturnId(true, false);
+
+        Long answerId = answerRepository.findAll().get(0).getId();
+
+        MvcResult mvcResult = performDelete(uri + answerId, UNLOGGED);
+        assertEquals(401, mvcResult.getResponse().getStatus());
     }
 
-    //TODO implement Edit only by owner/admin first
-//    @Test
-//    public void deleteAnswerExpects403() throws Exception {
-//        assertEquals(403, deleteAnswerStatus(11L, UserType.UNLOGGED, ""));
-//    }
-
+    //    //TODO implement Edit only by owner/admin first
+////    @Test
+////    public void deleteAnswerExpects403() throws Exception {
+////        assertEquals(403, deleteAnswerStatus(11L, UserType.UNLOGGED, ""));
+////    }
+//
     @Test
     public void deleteAnswerExpects404() throws Exception {
-        assertEquals(404, deleteAnswerStatus(13L, UserType.USER, "2222222"));
-        assertEquals(404, deleteAnswerStatus(14L, UserType.ADMIN, "2222222"));
+        assertEquals(questionRepository.count(), 0);
+        assertEquals(answerRepository.count(), 0);
+
+        MvcResult mvcResult = performDelete(uri + 123, USER);
+        assertEquals(404, mvcResult.getResponse().getStatus());
+
+        mvcResult = performDelete(uri + 123, ADMIN);
+        assertEquals(404, mvcResult.getResponse().getStatus());
     }
 
-    private int editAnswerStatus(Long answerId, UserType userType, String postfix) throws Exception {
-        Answer answer = answerRepository.findAnswerById(answerId);
-
-        String beforeAnswerContents = answer.getAnswer();
-        String newAnswerContents = "New answer";
-        answer.setAnswer(newAnswerContents);
-        String requestJson = mapToJson(answer);
-        MvcResult mvcResult = performPut(uri + answerId + postfix, requestJson, userType);
-        int status = mvcResult.getResponse().getStatus();
-
-        answer = answerRepository.findAnswerById(answerId);
-        if (status != 200) {
-            assertEquals(beforeAnswerContents, answer.getAnswer());
-        } else {
-            assertEquals(newAnswerContents, answer.getAnswer());
-        }
-
-        return status;
-    }
-
-    private int deleteAnswerStatus(Long answerId, UserType userType, String postfix) throws Exception {
-        MvcResult mvcResult = performDelete(uri + answerId + postfix, userType);
-        return mvcResult.getResponse().getStatus();
-    }
 }
