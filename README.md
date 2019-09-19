@@ -32,10 +32,10 @@ It is possible that this project will extend that to other fields of interest in
   - Users can check chosen cards as learned, and that card will not be shown while browsing
   - Users can add new Questions
   - Users can view a list of questions instead of drawing one
+  - Users can edit/delete items created by them
   
 ## Features that are in progress:
   - Answers can be voted for choosing the best answer
-  - Users can edit/delete items created by them
   - Multiple category chan be chosen for browsing
   - User can set daily / weekly goals to learn a set of question or master a topic
   
